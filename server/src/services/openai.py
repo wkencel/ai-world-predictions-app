@@ -1,15 +1,19 @@
 # services/openai.py
 import os
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Set up OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def generate_response(prompt, model="text-davinci-003", max_tokens=150):
+# Correct the variable assignment
+# model = 'gpt-4o-mini-realtime-preview'
+model = 'chatgpt-4o-latest'
+
+def generate_response(prompt, model=model, max_tokens=150): # DONT CHANGE THIS MODEL
     """
     Generates a response from OpenAI's GPT model based on the given prompt.
 
@@ -22,16 +26,19 @@ def generate_response(prompt, model="text-davinci-003", max_tokens=150):
         str: The generated text response.
     """
     try:
-        response = openai.Completion.create(
-            engine=model,
-            prompt=prompt,
+        if not os.getenv("OPENAI_API_KEY"):
+            raise ValueError("OPENAI_API_KEY not found in environment variables")
+
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=max_tokens,
             n=1,
-            stop=None,
             temperature=0.7,
         )
-        text = response.choices[0].text.strip()
-        return text
+        return response.choices[0].message.content
     except Exception as e:
-        print(f"Error communicating with OpenAI API: {e}")
+        print(f"Error communicating with OpenAI API: {str(e)}")
         return "Sorry, I couldn't process your request at the moment."
