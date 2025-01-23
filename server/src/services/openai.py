@@ -9,11 +9,9 @@ load_dotenv()
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Correct the variable assignment
-# model = 'gpt-4o-mini-realtime-preview'
-model = 'chatgpt-4o-latest'
+model = 'chatgpt-4o-latest' # DONT CHANGE THIS MODEL
 
-def generate_response(prompt, model=model, max_tokens=150): # DONT CHANGE THIS MODEL
+def generate_response(prompt, model=model, max_tokens=150):
     """
     Generates a response from OpenAI's GPT model based on the given prompt.
 
