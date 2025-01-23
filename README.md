@@ -66,6 +66,33 @@ The server handles data processing, API interactions, and serves the client appl
 
 To get started with the project, clone the repository and install the necessary dependencies for both the client and server. Then, run the development servers.
 
+## Setup
+
+1. **Install Dependencies**:
+   - Navigate to the `client` directory and run:
+     ```bash
+     npm install
+     ```
+   - Navigate to the `server` directory and run:
+     ```bash
+     npm install
+     ```
+
+2. **Create a `.env` file** in the root directory (or in the `server` and/or `client` directories if you have separate configurations). This file will store your environment variables. For example:
+
+   ```
+   # Server environment variables
+   OPENAI_API_KEY=your_openai_api_key
+   PINECONE_API_KEY=your_pinecone_api_key
+   POLYMARKET_API_KEY=your_polymarket_api_key
+   KALSHI_API_KEY=your_kalshi_api_key
+
+   # Client environment variables
+   REACT_APP_API_URL=your_api_url
+   ```
+
+   **Note**: Do not commit the `.env` file to git. It contains sensitive information like API keys and database credentials.
+
 ## Collaborators
 
 - Ashley Pean
