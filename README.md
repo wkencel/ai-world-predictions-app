@@ -65,3 +65,11 @@ The server handles data processing, API interactions, and serves the client appl
 ## Getting Started
 
 To get started with the project, clone the repository and install the necessary dependencies for both the client and server. Then, run the development servers.
+
+## Collaborators
+
+- Ashley Pean
+- Dave Laflam
+- Jamie Highsmith
+- John Maltese
+- Will Kencel
