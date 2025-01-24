@@ -1,6 +1,11 @@
 # app.py
+import os
 from flask import Flask, jsonify, request
 from services.openai import generate_response
+from dotenv import load_dotenv
+
+load_dotenv()
+PORT = os.getenv("PORT")
 
 app = Flask(__name__)
 
@@ -44,4 +49,4 @@ def predict():
         }), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=PORT, debug=True)
