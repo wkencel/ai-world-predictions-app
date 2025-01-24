@@ -9,11 +9,17 @@ import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
-# Load environment variables from .env file
-load_dotenv()
+# Determine the path to the root directory's .env file
+dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env')
+
+# Load environment variables from the specified .env file
+load_dotenv(dotenv_path=dotenv_path)
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise EnvironmentError("OPENAI_API_KEY not found in environment variables")
+client = OpenAI(api_key=api_key)
 
 # Model definitions
 DEEP_MODEL = 'gpt-4o'  # Deep thinking model
