@@ -28,11 +28,14 @@ def predict():
             return jsonify({"error": "Please provide a prompt in the request body"}), 400
 
         prompt = data['prompt']
-        response = generate_response(prompt)
+        mode = data.get('mode', 'fast')
+        timeframe = data.get('timeframe', 'short')
+
+        response = generate_response(prompt, mode=mode, timeframe=timeframe)
 
         return jsonify({
             "success": True,
-            "prediction": response
+            "prediction_result": response
         })
     except Exception as e:
         return jsonify({
