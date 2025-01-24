@@ -35,7 +35,7 @@ def predict():
 
         return jsonify({
             "success": True,
-            "result": response
+            "prediction_result": response
         })
     except Exception as e:
         return jsonify({
