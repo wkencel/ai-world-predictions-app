@@ -8,13 +8,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-# Resolve the path to the .env file located in the root directory
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../.env'))
 
-# Debug: Print the path to verify
-print(f"Loading .env from: {dotenv_path}")
-
-# Load the .env file
 load_dotenv(dotenv_path=dotenv_path)
 
 KALSHI_API_URL = os.getenv("KALSHI_API_URL")
