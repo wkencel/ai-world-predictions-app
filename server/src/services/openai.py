@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 import time
 import json
 import logging
+import pandas as pd
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,6 +20,15 @@ DEEP_MODEL = 'gpt-4o'  # Deep thinking model
 FAST_MODEL = 'gpt-4o-mini'  # Quick response model
 COUNCIL_MODEL = 'gpt-4o'  # Model for expert council
 
+# todo: pull in some RAG store data
+# todo: pull in some api data
+# todo: pull in some news data
+# todo: pull in web scraper data
+# todo: pull in some other data
+
+# Architecture: user input -> prompt -> model  -> response
+# we also need some way of getting our prediction outcome into the model
+
 # Configure detailed logging
 logging.basicConfig(
     level=logging.INFO,
@@ -25,18 +37,145 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short'):
+# New class to track agent performance
+class AgentPerformanceTracker:
+    def __init__(self):
+        self.performance_log = pd.DataFrame(columns=[
+            'timestamp',
+            'agent_id',
+            'agent_role',
+            'prediction',
+            'confidence',
+            'timeframe',
+            'entry_price',
+            'target_price',
+            'stop_loss',
+            'actual_outcome',
+            'pnl',
+            'accuracy_score'
+        ])
+
+        # Agent performance metrics
+        self.agent_metrics = {
+            'Technical Analyst': {'wins': 0, 'losses': 0, 'pnl': 0.0},
+            'Sentiment Analyst': {'wins': 0, 'losses': 0, 'pnl': 0.0},
+            'Macro Economist': {'wins': 0, 'losses': 0, 'pnl': 0.0},
+            'Risk Manager': {'wins': 0, 'losses': 0, 'pnl': 0.0}
+        }
+
+    def log_prediction(self,
+                      agent_role: str,
+                      prediction: Dict,
+                      timeframe: str,
+                      entry_price: float) -> None:
+        """Log a new prediction from an agent"""
+        self.performance_log = self.performance_log.append({
+            'timestamp': datetime.now(),
+            'agent_id': f"{agent_role}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            'agent_role': agent_role,
+            'prediction': prediction['prediction'],
+            'confidence': prediction['confidence'],
+            'timeframe': timeframe,
+            'entry_price': entry_price,
+            'target_price': self._extract_target_price(prediction['prediction']),
+            'stop_loss': self._calculate_stop_loss(entry_price, prediction),
+            'actual_outcome': None,
+            'pnl': 0.0,
+            'accuracy_score': 0.0
+        }, ignore_index=True)
+
+    def update_outcome(self,
+                      agent_id: str,
+                      actual_price: float,
+                      timestamp: datetime) -> None:
+        """Update the actual outcome and calculate P&L"""
+        idx = self.performance_log[self.performance_log['agent_id'] == agent_id].index
+        if len(idx) > 0:
+            prediction = self.performance_log.loc[idx[0]]
+
+            # Calculate P&L
+            pnl = self._calculate_pnl(
+                prediction['entry_price'],
+                actual_price,
+                prediction['target_price'],
+                prediction['stop_loss']
+            )
+
+            # Update performance log
+            self.performance_log.loc[idx[0], 'actual_outcome'] = actual_price
+            self.performance_log.loc[idx[0], 'pnl'] = pnl
+            self.performance_log.loc[idx[0], 'accuracy_score'] = self._calculate_accuracy(
+                prediction['target_price'],
+                actual_price
+            )
+
+            # Update agent metrics
+            agent_role = prediction['agent_role']
+            self.agent_metrics[agent_role]['pnl'] += pnl
+            if pnl > 0:
+                self.agent_metrics[agent_role]['wins'] += 1
+            else:
+                self.agent_metrics[agent_role]['losses'] += 1
+
+    def get_agent_performance(self, agent_role: str) -> Dict:
+        """Get performance metrics for a specific agent"""
+        metrics = self.agent_metrics[agent_role]
+        total_trades = metrics['wins'] + metrics['losses']
+
+        return {
+            'win_rate': metrics['wins'] / total_trades if total_trades > 0 else 0,
+            'total_pnl': metrics['pnl'],
+            'total_trades': total_trades,
+            'average_accuracy': self.performance_log[
+                self.performance_log['agent_role'] == agent_role
+            ]['accuracy_score'].mean()
+        }
+
+    def get_leaderboard(self) -> pd.DataFrame:
+        """Generate a leaderboard of agent performance"""
+        return pd.DataFrame([
+            {
+                'agent_role': role,
+                **self.get_agent_performance(role)
+            }
+            for role in self.agent_metrics.keys()
+        ]).sort_values('total_pnl', ascending=False)
+
+    def _extract_target_price(self, prediction: str) -> Optional[float]:
+        """Extract target price from prediction text"""
+        # TODO: Implement price extraction logic
+        # This would use regex or NLP to extract price targets from prediction text
+        pass
+
+    def _calculate_stop_loss(self, entry_price: float, prediction: Dict) -> float:
+        """Calculate stop loss based on prediction confidence"""
+        confidence = float(prediction['confidence'])
+        # More confident predictions get wider stops
+        stop_percentage = (100 - confidence) / 100 * 0.05  # 5% max stop
+        return entry_price * (1 - stop_percentage)
+
+    def _calculate_pnl(self,
+                      entry: float,
+                      actual: float,
+                      target: float,
+                      stop: float) -> float:
+        """Calculate P&L for a trade"""
+        # Implement P&L calculation logic based on your trading rules
+        pass
+
+    def _calculate_accuracy(self,
+                          predicted: float,
+                          actual: float) -> float:
+        """Calculate prediction accuracy score"""
+        # Implement accuracy calculation logic
+        pass
+
+# Update the generate_response function to use the tracker
+tracker = AgentPerformanceTracker()
+
+def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', current_price=None):
     """
-    Generates a response from OpenAI's GPT model based on the given prompt.
-
-    Args:
-        prompt (str): The input text prompt.
-        mode (str): The mode of response ('fast', 'deep', or 'council').
-        max_tokens (int): The maximum number of tokens in the response.
-        timeframe (str): Trading timeframe ('short', 'medium', 'long').
-
-    Returns:
-        str or dict: The generated response, format depends on mode.
+    Updated generate_response function that logs predictions and tracks performance
     """
     try:
         if not os.getenv("OPENAI_API_KEY"):
@@ -216,11 +355,29 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short'):
                     }
 
                 logger.info("🏁 Council session complete!")
+
+                # Log predictions for each expert
+                for opinion in discussion:
+                    if current_price:
+                        tracker.log_prediction(
+                            agent_role=opinion['expert'],
+                            prediction=opinion['analysis'],
+                            timeframe=timeframe,
+                            entry_price=current_price
+                        )
+
+                # Add performance metrics to the response
+                leaderboard = tracker.get_leaderboard()
+
                 return {
                     "discussion": discussion,
                     "consensus": final_consensus,
                     "process_time": "30 seconds",
-                    "mode": "council"
+                    "mode": "council",
+                    "performance_metrics": {
+                        "leaderboard": leaderboard.to_dict('records'),
+                        "total_council_pnl": leaderboard['total_pnl'].sum()
+                    }
                 }
 
             except Exception as e:
@@ -239,3 +396,8 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short'):
         logger.error(f"❌ Error type: {type(e)}")
         logger.error(f"❌ Error details: {str(e)}")
         return f"Sorry, I couldn't process your request at the moment. Error: {str(e)}"
+
+# New function to update prediction outcomes
+def update_prediction_outcome(agent_id: str, actual_price: float):
+    """Update the outcome of a prediction"""
+    tracker.update_outcome(agent_id, actual_price, datetime.now())
