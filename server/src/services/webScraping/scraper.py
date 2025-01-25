@@ -17,8 +17,18 @@ from langsmith.wrappers import wrap_openai
 from termcolor import colored
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from pydantic import BaseModel, Field
-from models import DataPoints
-from scraperUtils import extract_data_from_content, filter_empty_fields, create_filtered_model
+from .models import DataPoints, Player, Team
+from .scraperUtils import extract_data_from_content, filter_empty_fields, create_filtered_model
+from utils.logger import color_logger
+from datetime import datetime
+from bs4 import BeautifulSoup
+
+try:
+    import instructor
+    INSTRUCTOR_AVAILABLE = True
+except ImportError:
+    INSTRUCTOR_AVAILABLE = False
+    color_logger.warning("Instructor module not available. Some features may be limited.")
 
 # Load environment variables from .env file
 load_dotenv()
@@ -28,7 +38,7 @@ load_dotenv()
 client = wrap_openai(openai.Client())
 
 # Initialize Instructor client for handling tools
-# Currently scraping a specific site and updating data, later could load and search docs or conduct web search 
+# Currently scraping a specific site and updating data, later could load and search docs or conduct web search
 instructor_client = instructor.from_openai(client, mode=instructor.Mode.TOOLS)
 
 # Constants
@@ -36,38 +46,125 @@ GPT_MODEL = "gpt-4o"
 MAX_TOKEN = 100000 # this can be adjusted
 # LLAMA_API_KEY = os.getenv("LLAMA_API_KEY")
 
-# Web scraping function
-@traceable(run_type="tool", name="Scrape")
-def scrape(url, data_points, links_scraped):
+@traceable(run_type="tool", name="Scrape URL")
+async def scrape(url: str, data_points: List[Dict], links_scraped: List[str]) -> str:
     """
-    Scrape a given URL and extract structured data.
-    
+    Scrape content from a URL and extract structured data.
+
     Args:
-    url (str): The URL to scrape.
-    data_points (List[Dict]): The list of data points to extract.
-    links_scraped (List[str]): List of already scraped links.
-    
-    Returns:
-    dict: The extracted structured data or an error message.
+        url: The URL to scrape
+        data_points: List of data points to extract
+        links_scraped: List of already scraped URLs
     """
-    app = FirecrawlApp()
-
     try:
-        scraped_data = app.scrape_url(url)
-        markdown = scraped_data["markdown"][: (MAX_TOKEN * 2)]
+        if url in links_scraped:
+            return "URL already scraped"
+
+        color_logger.info(f"🔍 Scraping URL: {url}")
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        content = soup.get_text(separator=' ', strip=True)
+
+        # Extract data using the existing utility
+        extracted_data = extract_data_from_content(content, data_points, links_scraped, url)
+
         links_scraped.append(url)
+        return json.dumps(extracted_data, indent=2)
 
-        extracted_data = extract_data_from_content(markdown, data_points, links_scraped, url)
-
-        return extracted_data
-    
     except Exception as e:
-        print("Unable to scrape the url")
-        print(f"Exception: {e}")
-        return "Unable to scrape the url"
-    
+        color_logger.error(f"Error scraping {url}: {str(e)}")
+        return f"Error: {str(e)}"
 
-# Build agent runtime  
+class WebScraper:
+    """Web scraping component for the prediction framework"""
+
+    def __init__(self):
+        self.links_scraped = []
+        self.MAX_TOKEN = 100000
+        color_logger.info("🌐 WebScraper initialized")
+
+    async def fetch_data(self) -> Dict:
+        """Fetch data from configured web sources"""
+        try:
+            scraped_data = {
+                'news': await self._scrape_news(),
+                'social': await self._scrape_social(),
+                'timestamp': datetime.now().isoformat()
+            }
+            color_logger.info("✅ Web scraping completed successfully")
+            return scraped_data
+        except Exception as e:
+            color_logger.error(f"❌ Error in web scraping: {str(e)}")
+            return {}
+
+    async def _scrape_news(self) -> List[Dict]:
+        """Scrape news sources"""
+        try:
+            color_logger.info("📰 Scraping news sources...")
+            # Use the existing scrape function for news sources
+            news_data = []
+            for url in self.get_news_urls():
+                result = await scrape(url, [], self.links_scraped)
+                if isinstance(result, dict):
+                    news_data.append(result)
+            return news_data
+        except Exception as e:
+            color_logger.error(f"Error in news scraping: {str(e)}")
+            return []
+
+    async def _scrape_social(self) -> List[Dict]:
+        """Scrape social media sources"""
+        try:
+            color_logger.info("🐦 Scraping social media...")
+            # Use the existing scrape function for social media sources
+            social_data = []
+            for url in self.get_social_urls():
+                result = await scrape(url, [], self.links_scraped)
+                if isinstance(result, dict):
+                    social_data.append(result)
+            return social_data
+        except Exception as e:
+            color_logger.error(f"Error in social media scraping: {str(e)}")
+            return []
+
+    def get_news_urls(self) -> List[str]:
+        """Get list of news URLs to scrape"""
+        # Implement your news source URLs here
+        return []
+
+    def get_social_urls(self) -> List[str]:
+        """Get list of social media URLs to scrape"""
+        # Implement your social media source URLs here
+        return []
+
+    def process_data(self, data: Dict) -> Dict:
+        """Process scraped data"""
+        try:
+            if not data:
+                return {}
+
+            processed_data = {
+                'processed_news': self._process_news(data.get('news', [])),
+                'processed_social': self._process_social(data.get('social', [])),
+                'timestamp': datetime.now().isoformat()
+            }
+            color_logger.info("✅ Data processing completed")
+            return processed_data
+        except Exception as e:
+            color_logger.error(f"❌ Error processing scraped data: {str(e)}")
+            return {}
+
+    def _process_news(self, news_data: List) -> List[Dict]:
+        """Process news data"""
+        return []
+
+    def _process_social(self, social_data: List) -> List[Dict]:
+        """Process social media data"""
+        return []
+
+# Build agent runtime
 @traceable(run_type="tool", name="Update data points")
 def update_data(data_points, datas_update):
     """
@@ -305,7 +402,7 @@ def call_agent(
                 }
             )
             pretty_print_conversation(messages[-1])
-            
+
             if current_choice.finish_reason == "tool_calls":
                 tool_calls = current_choice.message.tool_calls
                 for tool_call in tool_calls:
@@ -407,7 +504,7 @@ def website_search(entity_name: str, website: str, data_points, links_scraped):
 
     if len(data_keys_to_search) > 0:
         system_prompt = f"""
-        you are a world class web scraper, you are great at finding information on urls; 
+        you are a world class web scraper, you are great at finding information on urls;
         You will scrape pages within a company/entity's domain to find specific data about the company/entity, but You NEVER make up links, ONLY scrape real links you found or given
 
         {special_instruction}
@@ -579,4 +676,3 @@ filename = f"{entity_name}.json"
 
 # Save the data
 save_json_pretty(data_points, filename)
-

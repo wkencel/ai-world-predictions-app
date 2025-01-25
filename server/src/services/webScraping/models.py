@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 # Define the pydantic data structure for the data points
@@ -16,7 +16,18 @@ class Team(BaseModel):
     players: List[Player] = Field(..., description="The players in the team")
     stats: List[str] = Field(..., description="The stats of the team")
 
+class NewsDataPoint(BaseModel):
+    title: str = Field(..., description="The title of the article")
+    url: str = Field(..., description="The URL of the article")
+    content: str = Field(..., description="The content of the article")
+
+class SocialDataPoint(BaseModel):
+    platform: str = Field(..., description="The social media platform")
+    content: str = Field(..., description="The content of the post")
+    engagement: Optional[dict] = Field(None, description="Engagement metrics")
+
 class DataPoints(BaseModel):
+    """Base model for scraped data points"""
     title: str = Field(..., description="The title of the article")
     author: str = Field(..., description="The author of the article")
     date: str = Field(..., description="The date of the article")

@@ -11,24 +11,41 @@ from colorama import init, Fore, Back, Style
 init()
 
 class ColorLogger:
-    def __init__(self, name: str = "AI-Predictions"):
-        self.logger = logging.getLogger(name)
-        self.logger.setLevel(logging.INFO)
+    def __init__(self):
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+        self.logger = logging.getLogger('PredictionFramework')
 
-        # Create console handler with custom formatter
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        ch.setFormatter(ColorFormatter())
+    def info(self, message: str):
+        self.logger.info(f"{Fore.BLUE}{message}{Style.RESET_ALL}")
 
-        # Create file handler
-        fh = logging.FileHandler('predictions.log')
-        fh.setLevel(logging.INFO)
-        fh.setFormatter(logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        ))
+    def success(self, message: str):
+        self.logger.info(f"{Fore.GREEN}{message}{Style.RESET_ALL}")
 
-        self.logger.addHandler(ch)
-        self.logger.addHandler(fh)
+    def error(self, message: str):
+        self.logger.error(f"{Fore.RED}{message}{Style.RESET_ALL}")
+
+    def warning(self, message: str):
+        self.logger.warning(f"{Fore.YELLOW}{message}{Style.RESET_ALL}")
+
+    def prediction(self, message: str):
+        self.logger.info(f"{Fore.MAGENTA}🎯 {message}{Style.RESET_ALL}")
+
+    def expert(self, expert_name: str, message: str):
+        self.logger.info(f"{Fore.CYAN}👨‍🔬 {expert_name}: {message}{Style.RESET_ALL}")
+
+    def analysis(self, message: str):
+        self.logger.info(f"{Fore.WHITE}📊 {message}{Style.RESET_ALL}")
+
+    def json_log(self, data: Any, prefix: str = ""):
+        """Pretty print JSON data"""
+        try:
+            formatted_json = json.dumps(data, indent=2)
+            self.logger.info(f"{Fore.WHITE}{prefix}\n{formatted_json}{Style.RESET_ALL}")
+        except Exception as e:
+            self.error(f"Error formatting JSON: {str(e)}")
 
     def log_service_call(self, service_name):
         """Decorator for logging service calls"""
@@ -58,40 +75,6 @@ class ColorLogger:
         """Log server start with a distinctive separator"""
         separator = f"\n{Fore.CYAN}{'=' * 80}{Style.RESET_ALL}"
         self.logger.info(f"{separator}\n🚀 SERVER STARTING - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n{separator}")
-
-    def expert(self, role: str, message: str):
-        """Log expert-related messages"""
-        self.logger.info(f"{Fore.MAGENTA}👤 {role}{Style.RESET_ALL} | {message}")
-
-    def prediction(self, message: str):
-        """Log prediction-related messages"""
-        self.logger.info(f"{Fore.GREEN}🎯 PREDICTION{Style.RESET_ALL} | {message}")
-
-    def analysis(self, message: str):
-        """Log analysis-related messages"""
-        self.logger.info(f"{Fore.BLUE}📊 ANALYSIS{Style.RESET_ALL} | {message}")
-
-    def error(self, message: str):
-        """Log errors with red background"""
-        self.logger.error(f"{Back.RED}{Fore.WHITE}❌ ERROR{Style.RESET_ALL} | {message}")
-
-    def warning(self, message: str):
-        """Log warnings in yellow"""
-        self.logger.warning(f"{Fore.YELLOW}⚠️ WARNING{Style.RESET_ALL} | {message}")
-
-    def success(self, message: str):
-        """Log success messages"""
-        self.logger.info(f"{Fore.GREEN}✅ SUCCESS{Style.RESET_ALL} | {message}")
-
-    def info(self, message: str):
-        """Log general info messages"""
-        self.logger.info(f"{Fore.CYAN}ℹ️ INFO{Style.RESET_ALL} | {message}")
-
-    def json_log(self, data: Dict[str, Any], prefix: str = ""):
-        """Log JSON data in a readable format"""
-        formatted_json = json.dumps(data, indent=2)
-        colored_json = f"{Fore.CYAN}{formatted_json}{Style.RESET_ALL}"
-        self.logger.info(f"{prefix}\n{colored_json}")
 
 class ColorFormatter(logging.Formatter):
     """Custom formatter for colored logs"""

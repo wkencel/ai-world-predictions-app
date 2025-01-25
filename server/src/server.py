@@ -2,11 +2,15 @@
 from flask import Flask, jsonify, request
 from services.kalshi import get_events, get_event, get_markets, get_market, get_trades
 from services.openai import generate_response
+from framework.prediction_framework import PredictionFramework
 from flask_cors import CORS
 import traceback
 
 app = Flask(__name__)
 CORS(app)
+
+# Initialize the framework
+framework = PredictionFramework()
 
 @app.route('/')
 def home():
@@ -25,39 +29,52 @@ def data():
         return jsonify({"message": "Send me some JSON data!"})
 
 @app.route('/predict', methods=['POST'])
-def predict():
+async def predict():
     try:
         data = request.get_json()
-        if not data or 'prompt' not in data:
-            return jsonify({"error": "Please provide a prompt in the request body"}), 400
+        if not data:
+            return jsonify({"error": "Please provide data in the request body"}), 400
 
-        prompt = data['prompt']
-        mode = data.get('mode', 'fast')
-        timeframe = data.get('timeframe', 'short')
+        query = data.get('query')
+        if not query:
+            return jsonify({"error": "Please provide a query in the request body"}), 400
 
-        response = generate_response(prompt, mode=mode, timeframe=timeframe)
+        # Generate prediction using the framework
+        result = await framework.generate_prediction(query)
 
-        # Handle different response formats based on mode
-        if mode == 'council':
-            # Return the full council response structure
-            return jsonify({
-                "success": True,
-                "consensus": {
-                    "final_prediction": response.get("consensus", {}).get("final_prediction", "Consensus building..."),
-                    "confidence_level": response.get("consensus", {}).get("confidence_level", 0)
-                },
-                "discussion": response.get("discussion", []),
-                "mode": "council"
-            })
-        else:
-            # Return simple prediction for fast/deep modes
-            return jsonify({
-                "success": True,
-                "prediction_result": response
-            })
+        return jsonify({
+            "success": True,
+            "prediction": result
+        })
 
     except Exception as e:
         print(f"Error in predict endpoint: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@app.route('/update-performance', methods=['POST'])
+async def update_performance():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Please provide data in the request body"}), 400
+
+        prediction_id = data.get('prediction_id')
+        actual_outcome = data.get('actual_outcome')
+
+        if not prediction_id or actual_outcome is None:
+            return jsonify({"error": "Missing required fields: prediction_id or actual_outcome"}), 400
+
+        # Update the model performance
+        framework.update_model_performance(prediction_id, actual_outcome)
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        print(f"Error in update-performance endpoint: {str(e)}")
         print(traceback.format_exc())
         return jsonify({
             "success": False,

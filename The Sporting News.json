@@ -1,0 +1,50 @@
+[
+    {
+        "description": "The title of the article",
+        "name": "title",
+        "reference": null,
+        "value": null
+    },
+    {
+        "description": "The author of the article",
+        "name": "author",
+        "reference": null,
+        "value": null
+    },
+    {
+        "description": "The date of the article",
+        "name": "date",
+        "reference": null,
+        "value": null
+    },
+    {
+        "description": "The URL of the article",
+        "name": "url",
+        "reference": null,
+        "value": null
+    },
+    {
+        "description": "The content of the article",
+        "name": "content",
+        "reference": null,
+        "value": null
+    },
+    {
+        "description": "A quote from the article",
+        "name": "quote",
+        "reference": null,
+        "value": null
+    },
+    {
+        "description": "The players in the article",
+        "name": "players",
+        "reference": null,
+        "value": null
+    },
+    {
+        "description": "The teams in the article",
+        "name": "teams",
+        "reference": null,
+        "value": null
+    }
+]

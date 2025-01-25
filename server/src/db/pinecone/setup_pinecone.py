@@ -1,4 +1,4 @@
-from pinecone import Pinecone
+from pinecone import Pinecone, ServerlessSpec
 import os
 from dotenv import load_dotenv
 from transformers import AutoTokenizer, AutoModel
@@ -6,6 +6,8 @@ import torch
 import json
 from datetime import datetime
 from utils.logger import color_logger
+from typing import Dict, List
+import pinecone
 
 # Load environment variables
 env_path = os.path.join(os.path.dirname(__file__), '../../../../.env')
@@ -15,6 +17,73 @@ load_dotenv(env_path)
 pc = None
 index = None
 index_name = "ai-world-predictions-pinecone"
+
+class PineconeManager:
+    def __init__(self):
+        try:
+            # Load environment variables
+            load_dotenv()
+
+            # Initialize Pinecone with new API
+            self.pc = Pinecone(
+                api_key=os.getenv('PINECONE_API_KEY')
+            )
+
+            self.index_name = os.getenv('PINECONE_INDEX', 'prediction-data')
+
+            # Create index if it doesn't exist
+            if self.index_name not in self.pc.list_indexes().names():
+                self.pc.create_index(
+                    name=self.index_name,
+                    dimension=1536,
+                    metric='cosine',
+                    spec=ServerlessSpec(
+                        cloud='aws',
+                        region='us-east-1'  # Corrected region format
+                    )
+                )
+
+            self.index = self.pc.Index(self.index_name)
+            color_logger.info("✅ Pinecone connection initialized")
+        except Exception as e:
+            color_logger.error(f"❌ Error initializing Pinecone: {str(e)}")
+            raise
+
+    async def store_data(self, data: Dict):
+        """Store data in Pinecone index"""
+        try:
+            vector_id = f"{data.get('source', 'unknown')}_{datetime.now().timestamp()}"
+            self.index.upsert(
+                vectors=[(vector_id, data['vector'], data['metadata'])],
+                namespace=data.get('namespace', 'default')
+            )
+            return True
+        except Exception as e:
+            color_logger.error(f"Error storing data in Pinecone: {str(e)}")
+            return False
+
+    async def query_data(self, query_vector: List[float], top_k: int = 5, namespace: str = 'default'):
+        """Query data from Pinecone index"""
+        try:
+            results = self.index.query(
+                vector=query_vector,
+                top_k=top_k,
+                namespace=namespace,
+                include_metadata=True
+            )
+            return results
+        except Exception as e:
+            color_logger.error(f"Error querying Pinecone: {str(e)}")
+            return None
+
+    async def delete_data(self, vector_id: str, namespace: str = 'default'):
+        """Delete data from Pinecone index"""
+        try:
+            self.index.delete(ids=[vector_id], namespace=namespace)
+            return True
+        except Exception as e:
+            color_logger.error(f"Error deleting data from Pinecone: {str(e)}")
+            return False
 
 @color_logger.log_service_call('pinecone')
 def query_pinecone(query_text: str):
