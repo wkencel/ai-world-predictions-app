@@ -34,30 +34,34 @@ color_logger.info(f"Access Token Secret exists: {bool(TWITTER_ACCESS_TOKEN_SECRE
 color_logger.info(f"Bearer Token exists: {bool(TWITTER_BEARER_TOKEN)}")
 color_logger.info(f"Bearer Token prefix: {TWITTER_BEARER_TOKEN[:10]}..." if TWITTER_BEARER_TOKEN else "No Bearer Token")
 color_logger.info(f"Env file path: {os.path.abspath(dotenv_path)}")
+# Check if we have the minimum required credentials
+TWITTER_ENABLED = all([
+    TWITTER_API_KEY,
+    TWITTER_API_SECRET_KEY,
+    TWITTER_BEARER_TOKEN
+])
 
-# Initialize Twitter client
-try:
-    # Initialize API v2 client with authentication
-    client = tweepy.Client(
-        bearer_token=TWITTER_BEARER_TOKEN,
-        consumer_key=TWITTER_API_KEY,
-        consumer_secret=TWITTER_API_SECRET_KEY,
-        access_token=TWITTER_ACCESS_TOKEN,
-        access_token_secret=TWITTER_ACCESS_TOKEN_SECRET,
-        wait_on_rate_limit=True
-    )
-    color_logger.info("Twitter API client initialized successfully")
 
-    # Test the client
-    try:
-        me = client.get_me()
-        color_logger.info(f"Successfully authenticated as: {me.data.username}")
-    except Exception as e:
-        color_logger.error(f"Authentication test failed: {str(e)}")
 
-except Exception as e:
-    color_logger.error(f"Failed to initialize Twitter client: {str(e)}")
+
+if not TWITTER_ENABLED:
+    color_logger.warning("Twitter API credentials missing - Twitter features will be disabled")
     client = None
+else:
+    try:
+        # Initialize API v2 client with authentication
+        client = tweepy.Client(
+            bearer_token=TWITTER_BEARER_TOKEN,
+            consumer_key=TWITTER_API_KEY,
+            consumer_secret=TWITTER_API_SECRET_KEY,
+            access_token=TWITTER_ACCESS_TOKEN,
+            access_token_secret=TWITTER_ACCESS_TOKEN_SECRET,
+            wait_on_rate_limit=True
+        )
+        color_logger.info("Twitter API client initialized successfully")
+    except Exception as e:
+        color_logger.error(f"Failed to initialize Twitter client: {str(e)}")
+        client = None
 
 # Rate limiting
 last_api_call = datetime.now()
@@ -272,19 +276,28 @@ def get_topic_sentiment(topic: str) -> Dict:
 def search_relevant_signals(topic: str, max_results: int = 2) -> Dict:
     """
     Search for high-quality signals about market-moving events.
-    Focuses on injuries, lineup changes, and other significant events.
+    Returns empty results if Twitter is not configured.
     """
+    if not TWITTER_ENABLED or client is None:
+        color_logger.warning("Twitter API not configured - returning empty results")
+        return {
+            "signals": [],
+            "meta": {
+                "result_count": 0,
+                "status": "Twitter API not configured"
+            }
+        }
+
     try:
         rate_limit()
 
         # Define high-signal keywords and patterns
-        injury_keywords = "injury injured hurt out questionable doubtful GTD"  # Simplified keywords
+        injury_keywords = "injury injured hurt out questionable doubtful GTD"
         lineup_keywords = "starting lineup benched suspended"
-        breaking_keywords = "breaking official confirmed"
 
         # Construct focused query
         query = f"({topic}) ({injury_keywords} OR {lineup_keywords})"
-        query += " -RT lang:en is:verified"  # Combine filters
+        query += " -RT lang:en is:verified"
 
         color_logger.info(f"Searching for high-signal tweets with query: {query}")
 
@@ -326,15 +339,22 @@ def search_relevant_signals(topic: str, max_results: int = 2) -> Dict:
                     "signal_type": signal_type
                 })
 
-                if len(high_signal_tweets) >= 2:  # Stop after finding 2 high-quality signals
+                if len(high_signal_tweets) >= 2:
                     break
 
         color_logger.info(f"Found {len(high_signal_tweets)} high-signal tweets")
         return {
-            "signals": high_signal_tweets[:2],  # Only return top 2 signals
+            "signals": high_signal_tweets[:2],
             "meta": {"result_count": len(high_signal_tweets[:2])}
         }
 
     except Exception as e:
         color_logger.error(f"Error searching high-signal tweets: {str(e)}")
-        return {"error": str(e), "signals": []}
+        return {
+            "error": str(e),
+            "signals": [],
+            "meta": {
+                "result_count": 0,
+                "status": "error"
+            }
+        }
