@@ -5,6 +5,7 @@ python-dotenv==1.0.0
 pinecone-client
 requests
 beautifulsoup4
+cryptography
 transformers
 torch
 =======
