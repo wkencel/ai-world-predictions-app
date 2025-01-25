@@ -19,6 +19,7 @@ from tenacity import retry, wait_random_exponential, stop_after_attempt
 from pydantic import BaseModel, Field
 from models import DataPoints
 from scraperUtils import extract_data_from_content, filter_empty_fields, create_filtered_model
+from db.pinecone.setup_pinecone import upsert_data_to_pinecone
 
 # Load environment variables from .env file
 load_dotenv()
@@ -579,4 +580,44 @@ filename = f"{entity_name}.json"
 
 # Save the data
 save_json_pretty(data_points, filename)
+
+def index_scraped_data_in_pinecone(data_points):
+    """
+    Takes the list of data points from your scraping output 
+    and upserts relevant text fields into Pinecone.
+    """
+    # Collect the textual content from data_points for embedding
+    # E.g., only the 'content' field or 'title' field
+    text_list = []
+
+    for dp in data_points:
+        if dp["name"] in ("content", "title") and dp["value"]:
+            # You can combine or handle them differently if you like
+            text_list.append(str(dp["value"]))
+
+    # Now push the text into Pinecone
+    upsert_data_to_pinecone(text_list)
+
+# Then anywhere after you complete scraping:
+def run_webscraping_pipeline(entity_name, website):
+    # 1. Do your scraping as normal, produce data_points
+    data_points = run_research(entity_name, website, ...)
+
+    # 2. Index the scraped data in Pinecone
+    index_scraped_data_in_pinecone(data_points)
+
+    # Optionally return data_points, or do more stuff
+    return data_points
+
+def chunk_text(text, chunk_size=500):
+    """
+    Splits text into chunks of 'chunk_size' tokens or words.
+    """
+    words = text.split()
+    for i in range(0, len(words), chunk_size):
+        yield " ".join(words[i:i+chunk_size])
+
+def index_article_in_chunks(article_text):
+    chunks = list(chunk_text(article_text))
+    upsert_data_to_pinecone(chunks)
 

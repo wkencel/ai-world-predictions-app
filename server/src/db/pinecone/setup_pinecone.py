@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import json
 from datetime import datetime
-from utils.logger import color_logger
+from ...utils.logger import color_logger
 
 # Load environment variables
 env_path = os.path.join(os.path.dirname(__file__), '../../../../.env')
@@ -141,8 +141,13 @@ def upsert_data_to_pinecone(data):
     try:
         if not data:
             raise ValueError("No data provided for upserting")
-        vectors = [(f'vec_{i}', text_to_vector(item), {'source': 'firecrawl'})
-                  for i, item in enumerate(data)]
+        vectors = []
+        for i, item in enumerate(data):
+            embedding = text_to_vector(item)
+            vectors.append(
+                (f'vec_{i}', embedding, {"text": item, "source": "firecrawl"})
+            )
+
         index.upsert(vectors)
     except Exception as e:
         raise RuntimeError(f"Failed to upsert data to Pinecone: {str(e)}")

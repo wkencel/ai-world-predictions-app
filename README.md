@@ -94,6 +94,7 @@ To get started with the project, clone the repository and install the necessary 
    PINECONE_API_KEY=your_pinecone_api_key
    POLYMARKET_API_KEY=your_polymarket_api_key
    KALSHI_API_KEY=your_kalshi_api_key
+   FIRECRAWL_API_KEY=firecrawl_api_key
 
    # Client environment variables
    REACT_APP_API_URL=your_api_url
