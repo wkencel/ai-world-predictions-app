@@ -1,5 +1,6 @@
 # Node modules
 node_modules/
+package-lock.json
 
 # Logs
 logs/
@@ -35,3 +36,6 @@ ai-predict
 # Add to .gitignore
 **/__pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
