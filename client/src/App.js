@@ -8,7 +8,6 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Fetch initial markets data
     fetchMarkets();
   }, []);
 
@@ -39,43 +38,68 @@ function App() {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>AI World Predictions</h1>
+    <div className="container">
+      <header>
+        <h1>AI World Predictions</h1>
+        <p className="subtitle">Bold Predictions for Tomorrow's Reality</p>
+      </header>
 
-      {/* Prediction Form */}
-      <div style={{ marginBottom: '40px' }}>
-        <h2>Make a Prediction</h2>
-        <form onSubmit={handlePredict}>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Enter your prediction prompt..."
-            style={{ width: '100%', height: '100px', marginBottom: '10px' }}
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? 'Predicting...' : 'Get Prediction'}
-          </button>
-        </form>
-        {prediction && (
-          <div style={{ marginTop: '20px' }}>
-            <h3>Prediction Result:</h3>
-            <p>{prediction}</p>
-          </div>
-        )}
-      </div>
+      <main>
+        {/* Prediction Section */}
+        <section className="prediction-section">
+          <h2>Make a Prediction</h2>
+          <form onSubmit={handlePredict} className="prediction-form">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Ask anything about future outcomes (sports, markets, events)..."
+              className="prediction-input"
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className={`predict-button ${loading ? 'loading' : ''}`}
+            >
+              {loading ? 'Generating Bold Prediction...' : 'Get Bold Prediction'}
+            </button>
+          </form>
 
-      {/* Markets Display */}
-      <div>
-        <h2>Available Markets</h2>
-        <div style={{ display: 'grid', gap: '20px' }}>
-          {markets.map((market, index) => (
-            <div key={index} style={{ border: '1px solid #ccc', padding: '10px' }}>
-              <h3>{market.title || market.ticker}</h3>
-              {market.description && <p>{market.description}</p>}
+          {prediction && (
+            <div className="prediction-result">
+              <h3>Bold Prediction</h3>
+              <div className="result-box">
+                <div className="prediction-content">
+                  {prediction}
+                </div>
+                <div className="prediction-disclaimer">
+                  This is a speculative prediction. Make your own financial decisions.
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          )}
+        </section>
+
+        {/* Markets Section */}
+        <section className="markets-section">
+          <h2>Available Markets</h2>
+          <div className="markets-grid">
+            {markets.map((market, index) => (
+              <div key={index} className="market-card">
+                <h3>{market.title || market.ticker}</h3>
+                {market.description && <p>{market.description}</p>}
+                <div className="market-footer">
+                  <span className="market-ticker">{market.ticker}</span>
+                  {market.status && (
+                    <span className={`market-status ${market.status.toLowerCase()}`}>
+                      {market.status}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
