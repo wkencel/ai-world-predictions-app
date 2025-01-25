@@ -1,0 +1,158 @@
+[
+    {
+        "description": "The title of the article",
+        "name": "title",
+        "reference": "https://www.sportingnews.com/us/soccer",
+        "value": "Real Madrid linked to another Liverpool defender if Alexander-Arnold chase fails"
+    },
+    {
+        "description": "The author of the article",
+        "name": "author",
+        "reference": "https://www.sportingnews.com/us/soccer",
+        "value": "Liam Happe"
+    },
+    {
+        "description": "The date of the article",
+        "name": "date",
+        "reference": "https://www.sportingnews.com/us/soccer",
+        "value": "6hr ago"
+    },
+    {
+        "description": "The URL of the article",
+        "name": "url",
+        "reference": "https://www.sportingnews.com/us/soccer",
+        "value": "https://www.sportingnews.com/us/soccer/news/real-madrid-another-liverpool-defender-trent-alexander-arnold-fails/d59ded9107cf516c50807ee0"
+    },
+    {
+        "description": "The content of the article",
+        "name": "content",
+        "reference": "https://www.sportingnews.com/us/soccer",
+        "value": "Real Madrid has been linked to pursuing another Liverpool defender should their chase for Trent Alexander-Arnold fall through. Details on the potential replacement and negotiation strategies are being awaited."
+    },
+    {
+        "description": "A quote from the article",
+        "name": "quote",
+        "reference": "https://www.sportingnews.com/us/soccer",
+        "value": "The Spanish giants remain keen on bolstering their defensive lineup."
+    },
+    {
+        "description": "The players in the article",
+        "name": "players",
+        "reference": null,
+        "value": [
+            {
+                "injuryStatus": "Unknown",
+                "name": "Trent Alexander-Arnold",
+                "position": "Defender",
+                "reference": "https://www.sportingnews.com/us/soccer",
+                "team": "Liverpool"
+            },
+            {
+                "name": "Victor Wembanyama",
+                "reference": "https://www.sportingnews.com/us/nba",
+                "team": "San Antonio Spurs"
+            },
+            {
+                "name": "LaMelo Ball",
+                "reference": "https://www.sportingnews.com/us/nba",
+                "team": "Charlotte Hornets"
+            },
+            {
+                "name": "Stephen Curry",
+                "reference": "https://www.sportingnews.com/us/nba",
+                "team": "Golden State Warriors"
+            },
+            {
+                "name": "Steve Kerr",
+                "position": "Coach",
+                "reference": "https://www.sportingnews.com/us/nba",
+                "team": "Golden State Warriors"
+            },
+            {
+                "name": "Carmelo Anthony",
+                "reference": "https://www.sportingnews.com/us/nba",
+                "team": "New York Knicks"
+            },
+            {
+                "name": "Nikola Vucevic",
+                "reference": "https://www.sportingnews.com/us/nba"
+            },
+            {
+                "name": "Jimmy Butler",
+                "reference": "https://www.sportingnews.com/us/nba"
+            },
+            {
+                "name": "Trae Young",
+                "reference": "https://www.sportingnews.com/us/nba"
+            }
+        ]
+    },
+    {
+        "description": "The teams in the article",
+        "name": "teams",
+        "reference": null,
+        "value": [
+            {
+                "name": "Real Madrid",
+                "reference": "https://www.sportingnews.com/us/soccer"
+            },
+            {
+                "name": "Liverpool",
+                "players": [
+                    {
+                        "injuryStatus": "Unknown",
+                        "name": "Trent Alexander-Arnold",
+                        "position": "Defender",
+                        "team": "Liverpool"
+                    }
+                ],
+                "reference": "https://www.sportingnews.com/us/soccer"
+            },
+            {
+                "name": "San Antonio Spurs",
+                "players": [
+                    {
+                        "name": "Victor Wembanyama",
+                        "team": "San Antonio Spurs"
+                    }
+                ],
+                "reference": "https://www.sportingnews.com/us/nba"
+            },
+            {
+                "name": "Charlotte Hornets",
+                "players": [
+                    {
+                        "name": "LaMelo Ball",
+                        "team": "Charlotte Hornets"
+                    }
+                ],
+                "reference": "https://www.sportingnews.com/us/nba"
+            },
+            {
+                "name": "Golden State Warriors",
+                "players": [
+                    {
+                        "name": "Stephen Curry",
+                        "team": "Golden State Warriors"
+                    },
+                    {
+                        "name": "Steve Kerr",
+                        "position": "Coach",
+                        "team": "Golden State Warriors"
+                    }
+                ],
+                "reference": "https://www.sportingnews.com/us/nba"
+            },
+            {
+                "name": "New York Knicks",
+                "players": [
+                    {
+                        "name": "Carmelo Anthony",
+                        "team": "New York Knicks"
+                    }
+                ],
+                "reference": "https://www.sportingnews.com/us/nba"
+            }
+        ]
+    }
+]
