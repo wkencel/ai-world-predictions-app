@@ -1,16 +1,11 @@
 import json
-import logging
 from datetime import datetime
 from typing import Dict
 from db.pinecone.setup_pinecone import query_pinecone
 from services.kalshi import get_events
-from utils.logger import logger  # Import our new logger
+from utils.logger import color_logger  # Update import
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-@logger.log_service_call('test')
+@color_logger.log_service_call('test')
 def get_test_data() -> Dict:
     """
     Enhanced test data with better logging and more realistic data
@@ -20,14 +15,14 @@ def get_test_data() -> Dict:
     # Get real Kalshi data
     try:
         kalshi_data = get_events(limit=1)
-        logger.logger.info(json.dumps({
+        color_logger.logger.info(json.dumps({
             'component': 'test_data',
             'source': 'kalshi',
             'status': 'success'
         }))
         test_data['market_data'] = kalshi_data
     except Exception as e:
-        logger.logger.warning(json.dumps({
+        color_logger.logger.warning(json.dumps({
             'component': 'test_data',
             'source': 'kalshi',
             'status': 'failed',
@@ -46,7 +41,7 @@ def get_test_data() -> Dict:
     # Get RAG context
     try:
         rag_context = query_pinecone("Warriors Lakers betting history")
-        logger.logger.info(json.dumps({
+        color_logger.logger.info(json.dumps({
             'component': 'test_data',
             'source': 'pinecone',
             'status': 'success',
@@ -54,7 +49,7 @@ def get_test_data() -> Dict:
         }))
         test_data['historical_context'] = rag_context
     except Exception as e:
-        logger.logger.warning(json.dumps({
+        color_logger.logger.warning(json.dumps({
             'component': 'test_data',
             'source': 'pinecone',
             'status': 'failed',
@@ -114,7 +109,7 @@ def get_test_data() -> Dict:
         }
     })
 
-    logger.logger.info(json.dumps({
+    color_logger.logger.info(json.dumps({
         'component': 'test_data',
         'status': 'complete',
         'data_sources': list(test_data.keys())
@@ -199,8 +194,8 @@ if __name__ == "__main__":
         )
 
         # Print prediction results
-        logger.info("\n=== BETTING ANALYSIS RESULTS ===")
-        logger.info(json.dumps(prediction, indent=2))
+        color_logger.logger.info("\n=== BETTING ANALYSIS RESULTS ===")
+        color_logger.logger.info(json.dumps(prediction, indent=2))
 
         # Simulate game result and update tracker
         result = simulate_game_result()
@@ -208,8 +203,8 @@ if __name__ == "__main__":
             agent_id = f"{discussion['expert']}_{discussion['analysis'].get('confidence', 'NA')}"
             update_prediction_outcome(agent_id, result['actual_odds_payout'])
 
-        logger.info("\n=== GAME RESULT ===")
-        logger.info(json.dumps(result, indent=2))
+        color_logger.logger.info("\n=== GAME RESULT ===")
+        color_logger.logger.info(json.dumps(result, indent=2))
 
     except Exception as e:
-        logger.error(f"Test failed: {str(e)}")
+        color_logger.logger.error(f"Test failed: {str(e)}")

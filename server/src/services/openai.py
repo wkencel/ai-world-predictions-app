@@ -4,23 +4,18 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import time
 import json
-import logging
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from db.pinecone.setup_pinecone import query_pinecone
 from services.kalshi import get_events
-from utils.logger import custom_logger  # Import our custom logger
+from utils.logger import color_logger
 
 # Determine the path to the root directory's .env file
 dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env')
 
 # Load environment variables from the specified .env file
 load_dotenv(dotenv_path=dotenv_path)
-
-# Configure basic logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Initialize OpenAI client
 api_key = os.getenv("OPENAI_API_KEY")
@@ -42,143 +37,213 @@ COUNCIL_MODEL = 'gpt-4o'  # Model for expert council
 # Architecture: user input -> prompt -> model  -> response
 # we also need some way of getting our prediction outcome into the model
 
-# New class to track agent performance
+# Move AgentPerformanceTracker class to the top of the file, after imports
 class AgentPerformanceTracker:
     def __init__(self):
-        self.performance_log = pd.DataFrame(columns=[
-            'timestamp',
-            'agent_id',
-            'agent_role',
-            'prediction',
-            'confidence',
-            'timeframe',
-            'entry_price',
-            'target_price',
-            'stop_loss',
-            'actual_outcome',
-            'pnl',
-            'accuracy_score'
-        ])
-
-        # Agent performance metrics
-        self.agent_metrics = {
-            'Technical Analyst': {'wins': 0, 'losses': 0, 'pnl': 0.0},
-            'Sentiment Analyst': {'wins': 0, 'losses': 0, 'pnl': 0.0},
-            'Macro Economist': {'wins': 0, 'losses': 0, 'pnl': 0.0},
-            'Risk Manager': {'wins': 0, 'losses': 0, 'pnl': 0.0}
+        self.dtypes = {
+            'timestamp': 'datetime64[ns]',
+            'agent_id': 'string',
+            'agent_role': 'string',
+            'prediction': 'string',
+            'confidence': 'float64',
+            'timeframe': 'string',
+            'entry_price': 'float64',
+            'target_price': 'float64',
+            'stop_loss': 'float64',
+            'actual_outcome': 'float64',
+            'pnl': 'float64',
+            'accuracy_score': 'float64'
         }
 
-    def log_prediction(self,
-                      agent_role: str,
-                      prediction: Dict,
-                      timeframe: str,
-                      entry_price: float) -> None:
-        """Log a new prediction from an agent"""
-        self.performance_log = self.performance_log.append({
-            'timestamp': datetime.now(),
-            'agent_id': f"{agent_role}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        # Initialize with historical performance data for all experts
+        historical_data = [
+            # Technical Analyst history
+            {
+                'timestamp': pd.Timestamp.now() - pd.Timedelta(days=5),
+                'agent_id': 'Technical_Analyst_historical_1',
+                'agent_role': 'Technical Analyst',
+                'prediction': 'win',
+                'confidence': 80.0,
+                'timeframe': 'short',
+                'entry_price': 1.85,
+                'target_price': 2.0,
+                'stop_loss': 1.75,
+                'actual_outcome': 1.95,
+                'pnl': 5.4,
+                'accuracy_score': 1.0
+            },
+            # Sentiment Analyst history
+            {
+                'timestamp': pd.Timestamp.now() - pd.Timedelta(days=4),
+                'agent_id': 'Sentiment_Analyst_historical_1',
+                'agent_role': 'Sentiment Analyst',
+                'prediction': 'win',
+                'confidence': 75.0,
+                'timeframe': 'short',
+                'entry_price': 1.90,
+                'target_price': 2.1,
+                'stop_loss': 1.80,
+                'actual_outcome': 2.05,
+                'pnl': 7.9,
+                'accuracy_score': 1.0
+            },
+            # Macro Economist history
+            {
+                'timestamp': pd.Timestamp.now() - pd.Timedelta(days=3),
+                'agent_id': 'Macro_Economist_historical_1',
+                'agent_role': 'Macro Economist',
+                'prediction': 'win',
+                'confidence': 70.0,
+                'timeframe': 'short',
+                'entry_price': 1.75,
+                'target_price': 1.95,
+                'stop_loss': 1.65,
+                'actual_outcome': 1.85,
+                'pnl': 5.7,
+                'accuracy_score': 1.0
+            },
+            # Risk Manager history
+            {
+                'timestamp': pd.Timestamp.now() - pd.Timedelta(days=2),
+                'agent_id': 'Risk_Manager_historical_1',
+                'agent_role': 'Risk Manager',
+                'prediction': 'win',
+                'confidence': 85.0,
+                'timeframe': 'short',
+                'entry_price': 1.80,
+                'target_price': 2.0,
+                'stop_loss': 1.70,
+                'actual_outcome': 1.90,
+                'pnl': 5.5,
+                'accuracy_score': 1.0
+            }
+        ]
+
+        # Create DataFrame with historical data
+        self.performance_log = pd.DataFrame(historical_data).astype(self.dtypes)
+
+        color_logger.info("Performance tracker initialized with historical data")
+        color_logger.json_log(self.get_leaderboard().to_dict('records'), "Initial Leaderboard:")
+
+    def log_prediction(self, agent_role, prediction, timeframe, entry_price):
+        """Log a new prediction"""
+        new_data = {
+            'timestamp': pd.Timestamp.now(),
+            'agent_id': f"{agent_role}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}",
             'agent_role': agent_role,
-            'prediction': prediction['prediction'],
-            'confidence': prediction['confidence'],
+            'prediction': prediction.get('prediction', ''),
+            'confidence': float(prediction.get('confidence', 0)),
             'timeframe': timeframe,
-            'entry_price': entry_price,
-            'target_price': self._extract_target_price(prediction['prediction']),
-            'stop_loss': self._calculate_stop_loss(entry_price, prediction),
-            'actual_outcome': None,
+            'entry_price': float(entry_price),
+            'target_price': float(self._extract_target_price(prediction.get('prediction', ''))),
+            'stop_loss': float(self._calculate_stop_loss(entry_price, prediction)),
+            'actual_outcome': 0.0,
             'pnl': 0.0,
             'accuracy_score': 0.0
-        }, ignore_index=True)
-
-    def update_outcome(self,
-                      agent_id: str,
-                      actual_price: float,
-                      timestamp: datetime) -> None:
-        """Update the actual outcome and calculate P&L"""
-        idx = self.performance_log[self.performance_log['agent_id'] == agent_id].index
-        if len(idx) > 0:
-            prediction = self.performance_log.loc[idx[0]]
-
-            # Calculate P&L
-            pnl = self._calculate_pnl(
-                prediction['entry_price'],
-                actual_price,
-                prediction['target_price'],
-                prediction['stop_loss']
-            )
-
-            # Update performance log
-            self.performance_log.loc[idx[0], 'actual_outcome'] = actual_price
-            self.performance_log.loc[idx[0], 'pnl'] = pnl
-            self.performance_log.loc[idx[0], 'accuracy_score'] = self._calculate_accuracy(
-                prediction['target_price'],
-                actual_price
-            )
-
-            # Update agent metrics
-            agent_role = prediction['agent_role']
-            self.agent_metrics[agent_role]['pnl'] += pnl
-            if pnl > 0:
-                self.agent_metrics[agent_role]['wins'] += 1
-            else:
-                self.agent_metrics[agent_role]['losses'] += 1
-
-    def get_agent_performance(self, agent_role: str) -> Dict:
-        """Get performance metrics for a specific agent"""
-        metrics = self.agent_metrics[agent_role]
-        total_trades = metrics['wins'] + metrics['losses']
-
-        return {
-            'win_rate': metrics['wins'] / total_trades if total_trades > 0 else 0,
-            'total_pnl': metrics['pnl'],
-            'total_trades': total_trades,
-            'average_accuracy': self.performance_log[
-                self.performance_log['agent_role'] == agent_role
-            ]['accuracy_score'].mean()
         }
 
-    def get_leaderboard(self) -> pd.DataFrame:
-        """Generate a leaderboard of agent performance"""
-        return pd.DataFrame([
-            {
-                'agent_role': role,
-                **self.get_agent_performance(role)
-            }
-            for role in self.agent_metrics.keys()
-        ]).sort_values('total_pnl', ascending=False)
+        # Create new row with correct dtypes
+        new_row = pd.DataFrame([new_data]).astype(self.dtypes)
 
-    def _extract_target_price(self, prediction: str) -> Optional[float]:
+        # Concatenate with existing data
+        self.performance_log = pd.concat([self.performance_log, new_row], ignore_index=True)
+
+    def _extract_target_price(self, prediction: str) -> float:
         """Extract target price from prediction text"""
-        # TODO: Implement price extraction logic
-        # This would use regex or NLP to extract price targets from prediction text
-        pass
+        # Mock implementation
+        return 2.0
 
     def _calculate_stop_loss(self, entry_price: float, prediction: Dict) -> float:
-        """Calculate stop loss based on prediction confidence"""
-        confidence = float(prediction['confidence'])
-        # More confident predictions get wider stops
-        stop_percentage = (100 - confidence) / 100 * 0.05  # 5% max stop
-        return entry_price * (1 - stop_percentage)
+        """Calculate stop loss based on entry price and prediction"""
+        # Mock implementation - 5% below entry price
+        return entry_price * 0.95
 
-    def _calculate_pnl(self,
-                      entry: float,
-                      actual: float,
-                      target: float,
-                      stop: float) -> float:
-        """Calculate P&L for a trade"""
-        # Implement P&L calculation logic based on your trading rules
-        pass
+    def update_outcome(self, agent_id: str, actual_outcome: float, timestamp: datetime) -> None:
+        """Update the outcome of a prediction"""
+        try:
+            mask = self.performance_log['agent_id'] == agent_id
+            if not any(mask):
+                color_logger.warning(f"No prediction found for agent_id: {agent_id}")
+                return
 
-    def _calculate_accuracy(self,
-                          predicted: float,
-                          actual: float) -> float:
-        """Calculate prediction accuracy score"""
-        # Implement accuracy calculation logic
-        pass
+            entry_price = self.performance_log.loc[mask, 'entry_price'].iloc[0]
+            pnl = ((actual_outcome - entry_price) / entry_price) * 100
 
-# Update the generate_response function to use the tracker
+            self.performance_log.loc[mask, 'actual_outcome'] = actual_outcome
+            self.performance_log.loc[mask, 'pnl'] = pnl
+            self.performance_log.loc[mask, 'accuracy_score'] = 1.0 if pnl > 0 else 0.0
+
+        except Exception as e:
+            color_logger.error(f"Error updating outcome: {str(e)}")
+
+    def get_leaderboard(self) -> pd.DataFrame:
+        """Get performance leaderboard with actual metrics"""
+        try:
+            if self.performance_log.empty:
+                return pd.DataFrame({
+                    'agent_role': [
+                        'Technical Analyst', 'Sentiment Analyst',
+                        'Macro Economist', 'Risk Manager'
+                    ],
+                    'total_trades': 0,
+                    'win_rate': 0.0,
+                    'total_pnl': 0.0,
+                    'average_accuracy': 0.0
+                })
+
+            stats = self.performance_log.groupby('agent_role').agg({
+                'agent_id': 'count',
+                'pnl': ['sum', 'mean'],
+                'accuracy_score': 'mean'
+            }).reset_index()
+
+            stats.columns = ['agent_role', 'total_trades', 'total_pnl', 'avg_pnl', 'average_accuracy']
+
+            # Calculate win rate (percentage of trades with positive PnL)
+            win_rates = self.performance_log.groupby('agent_role').apply(
+                lambda x: (x['pnl'] > 0).mean()
+            ).reset_index()
+            win_rates.columns = ['agent_role', 'win_rate']
+
+            # Merge win rates with stats
+            stats = stats.merge(win_rates, on='agent_role')
+
+            # Round numeric columns
+            numeric_cols = ['total_pnl', 'avg_pnl', 'average_accuracy', 'win_rate']
+            stats[numeric_cols] = stats[numeric_cols].round(3)
+
+            return stats
+
+        except Exception as e:
+            color_logger.error(f"Error generating leaderboard: {str(e)}")
+            return pd.DataFrame()
+
+# Initialize the tracker at the module level
 tracker = AgentPerformanceTracker()
 
-@custom_logger.log_service_call('openai')  # Use custom_logger instead of logger
+# Initialize tracker with some historical data
+tracker = AgentPerformanceTracker()
+historical_outcomes = [
+    {"agent": "Technical Analyst", "prediction": "win", "actual": "win", "pnl": 100},
+    {"agent": "Sentiment Analyst", "prediction": "loss", "actual": "loss", "pnl": 50},
+    {"agent": "Macro Economist", "prediction": "win", "actual": "win", "pnl": 75},
+    {"agent": "Risk Manager", "prediction": "win", "actual": "loss", "pnl": -25}
+]
+
+for outcome in historical_outcomes:
+    tracker.log_prediction(
+        agent_role=outcome["agent"],
+        prediction={"prediction": outcome["prediction"], "confidence": 80},
+        timeframe="short",
+        entry_price=1.85
+    )
+    tracker.update_outcome(
+        f"{outcome['agent']}_80",
+        1.85 if outcome["actual"] == "win" else 0,
+        datetime.now()
+    )
+
+@color_logger.log_service_call('openai')  # Use color_logger for the decorator
 def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', current_price=None):
     """
     Updated generate_response function that includes RAG and market data
@@ -187,16 +252,16 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
         if not os.getenv("OPENAI_API_KEY"):
             raise ValueError("OPENAI_API_KEY not found in environment variables")
 
-        logger.info("="*50)
-        logger.info(f"🤖 Starting new prediction request - Mode: {mode}")
+        color_logger.info("="*50)
+        color_logger.info(f"🤖 Starting new prediction request - Mode: {mode}")
 
         # Enrich prompt with context
         enriched_prompt = enrich_prompt_with_context(prompt, current_price)
-        logger.info(f"📝 Enriched Prompt: {enriched_prompt[:200]}...")
+        color_logger.info(f" Enriched Prompt: {enriched_prompt[:200]}...")
 
         if mode == 'fast':
-            logger.info("🚀 Initiating FAST mode with o1-mini model")
-            logger.info("📊 Optimizing for speed and conciseness...")
+            color_logger.info("🚀 Initiating FAST mode with o1-mini model")
+            color_logger.info("📊 Optimizing for speed and conciseness...")
 
             messages = [{"role": "user", "content": enriched_prompt}]
 
@@ -209,26 +274,26 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             )
             result = response.choices[0].message.content.strip()
 
-            logger.info("✨ Fast analysis complete!")
-            logger.info(f"📊 Response: {result[:100]}...")
+            color_logger.info("✨ Fast analysis complete!")
+            color_logger.info(f"📊 Response: {result[:100]}...")
             return result
 
         elif mode == 'deep':
-            logger.info("🧠 Initiating DEEP mode with o1 model")
-            logger.info("📚 Beginning thorough analysis process...")
+            color_logger.info("🧠 Initiating DEEP mode with o1 model")
+            color_logger.info(" Beginning thorough analysis process...")
 
             # Simulate deep thinking with progress updates
             for i in range(20):
                 time.sleep(1)
                 if i % 4 == 0:  # Log every 4 seconds
-                    logger.info(f"🤔 Deep thinking in progress... {i*5}% complete")
-                    logger.info("💭 Analyzing market patterns and correlations...")
-                    logger.info("📈 Processing technical indicators...")
-                    logger.info("🌍 Evaluating global market conditions...")
+                    color_logger.info(f"🤔 Deep thinking in progress... {i*5}% complete")
+                    color_logger.info("💭 Analyzing market patterns and correlations...")
+                    color_logger.info("📈 Processing technical indicators...")
+                    color_logger.info("🌍 Evaluating global market conditions...")
 
             messages = [{"role": "user", "content": enriched_prompt}]
 
-            logger.info("🎯 Finalizing deep analysis...")
+            color_logger.info("🎯 Finalizing deep analysis...")
             response = client.chat.completions.create(
                 model=DEEP_MODEL,
                 messages=messages,
@@ -238,13 +303,13 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             )
             result = response.choices[0].message.content.strip()
 
-            logger.info("✅ Deep analysis complete!")
-            logger.info(f"📊 Response: {result[:100]}...")
+            color_logger.info("✅ Deep analysis complete!")
+            color_logger.info(f"📊 Response: {result[:100]}...")
             return result
 
         elif mode == 'council':
-            logger.info("👥 Initiating COUNCIL mode with expert panel")
-            logger.info("🎓 Assembling expert council members...")
+            color_logger.info("👥 Initiating COUNCIL mode with expert panel")
+            color_logger.info("🎓 Assembling expert council members...")
             experts = [
                 {"role": "Technical Analyst", "bias": "chart-focused", "style": "conservative"},
                 {"role": "Sentiment Analyst", "bias": "social-media-driven", "style": "aggressive"},
@@ -255,98 +320,55 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             discussion = []
 
             # Phase 1: Individual Expert Analysis
-            logger.info("\n📣 Starting Phase 1: Individual Expert Analysis")
+            color_logger.info("\n📣 Starting Phase 1: Individual Expert Analysis")
             for expert in experts:
-                logger.info(f"\n👤 Consulting {expert['role']}...")
-                logger.info(f"💭 Expert Bias: {expert['bias']}")
-                logger.info(f"🎯 Trading Style: {expert['style']}")
+                color_logger.expert(expert['role'], f"Starting analysis (Bias: {expert['bias']}, Style: {expert['style']})")
 
-                expert_prompt = f"""You are a {expert['role']} with a {expert['bias']} approach and {expert['style']} trading style.
-                Analyze this scenario and provide your prediction. Format your response EXACTLY as shown in the example, with no additional text or markdown:
+                expert_prompt = generate_expert_prompt(expert, enriched_prompt)
 
-                Example format:
-                {{
-                    "prediction": "Warriors to win",
-                    "confidence": 85,
-                    "factors": [
-                        "factor 1",
-                        "factor 2",
-                        "factor 3"
-                    ],
-                    "risks": [
-                        "risk 1",
-                        "risk 2",
-                        "risk 3"
-                    ]
-                }}
+                response = client.chat.completions.create(
+                    model=DEEP_MODEL,
+                    messages=[{"role": "user", "content": expert_prompt}],
+                    temperature=0.7,
+                    max_tokens=max_tokens
+                )
 
-                Scenario to analyze:
-                {enriched_prompt}"""
+                parsed_response = parse_expert_response(response.choices[0].message.content)
 
-                try:
-                    logger.info("🤔 Expert is analyzing the scenario...")
-                    messages = [{"role": "user", "content": expert_prompt}]
+                color_logger.success(f"Expert {expert['role']} analysis complete")
+                color_logger.prediction(f"Prediction: {parsed_response['prediction']}")
+                color_logger.analysis(f"Confidence: {parsed_response['confidence']}%")
+                color_logger.json_log(parsed_response, prefix=f"📝 {expert['role']} Detailed Analysis:")
 
-                    response = client.chat.completions.create(
-                        model=COUNCIL_MODEL,
-                        messages=messages,
-                        max_tokens=max_tokens,
-                        temperature=0.7,
-                    )
+                # Add to discussion
+                discussion.append({
+                    "expert": expert["role"],
+                    "analysis": parsed_response
+                })
 
-                    expert_response = response.choices[0].message.content.strip()
-                    logger.info(f"📝 Raw expert response received: {expert_response[:100]}...")
-
-                    try:
-                        expert_opinion = json.loads(expert_response)
-                        logger.info("✅ Successfully parsed expert opinion")
-                        logger.info(f"🎯 Prediction: {expert_opinion['prediction'][:100]}...")
-                        logger.info(f"📊 Confidence: {expert_opinion['confidence']}")
-                    except json.JSONDecodeError as je:
-                        logger.error(f"⚠️ JSON parsing failed: {je}")
-                        expert_opinion = {
-                            "prediction": expert_response,
-                            "confidence": "N/A",
-                            "factors": [],
-                            "risks": []
-                        }
-
-                    discussion.append({
-                        "expert": expert['role'],
-                        "analysis": expert_opinion
-                    })
-
-                except Exception as e:
-                    logger.error(f"❌ Expert consultation error: {str(e)}")
-                    discussion.append({
-                        "expert": expert['role'],
-                        "analysis": {"error": str(e)}
-                    })
-
-                logger.info("⏳ Processing next expert in 5 seconds...")
+                color_logger.info("Processing next expert in 5 seconds...")
                 time.sleep(5)
 
             # Phase 2: Group Discussion and Consensus
-            logger.info("\n📣 Starting Phase 2: Building Consensus")
-            logger.info("🤝 Moderator is reviewing all expert opinions...")
+            color_logger.info("\n📣 Starting Phase 2: Building Consensus")
+            color_logger.info("🤝 Moderator is reviewing all expert opinions...")
 
             consensus_prompt = f"""As the council moderator, analyze these expert opinions and provide a final consensus.
-            Format your response EXACTLY as shown in the example, with no additional text or markdown:
+Return ONLY a JSON object with no markdown formatting or additional text:
 
-            Example format:
-            {{
-                "final_prediction": "Warriors to win",
-                "confidence_level": 85,
-                "profit_strategy": "detailed strategy here",
-                "risk_assessment": "risk assessment here",
-                "sentiment_score": 75
-            }}
+{{
+    "final_prediction": "clear prediction",
+    "confidence_level": 75,
+    "profit_strategy": "detailed strategy",
+    "risk_assessment": "key risks",
+    "sentiment_score": 75
+}}
 
-            Expert Opinions:
-            {json.dumps(discussion, indent=2)}"""
+Expert Opinions:
+{json.dumps(discussion, indent=2)}"""
 
             try:
-                logger.info("🧠 Moderator is synthesizing expert opinions...")
+                color_logger.info("🧠 Moderator is synthesizing expert opinions...")
                 messages = [{"role": "user", "content": consensus_prompt}]
 
                 consensus_response = client.chat.completions.create(
@@ -357,16 +379,16 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
                 )
 
                 consensus_text = consensus_response.choices[0].message.content.strip()
-                logger.info("📝 Raw consensus received")
-                logger.info(f"📊 Consensus text: {consensus_text[:100]}...")
+                color_logger.info("📝 Raw consensus received")
+                color_logger.info(f"📊 Consensus text: {consensus_text[:100]}...")
 
                 try:
                     final_consensus = json.loads(consensus_text)
-                    logger.info("✅ Successfully parsed consensus")
-                    logger.info(f"🎯 Final Prediction: {final_consensus['final_prediction'][:100]}...")
-                    logger.info(f"📊 Confidence Level: {final_consensus['confidence_level']}")
+                    color_logger.info("✅ Successfully parsed consensus")
+                    color_logger.info(f"🎯 Final Prediction: {final_consensus['final_prediction'][:100]}...")
+                    color_logger.info(f"📊 Confidence Level: {final_consensus['confidence_level']}")
                 except json.JSONDecodeError as je:
-                    logger.error(f"⚠️ Consensus JSON parsing failed: {je}")
+                    color_logger.error(f"⚠️ Consensus JSON parsing failed: {je}")
                     final_consensus = {
                         "final_prediction": consensus_text,
                         "confidence_level": "N/A",
@@ -375,17 +397,12 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
                         "sentiment_score": "N/A"
                     }
 
-                logger.info("🏁 Council session complete!")
+                color_logger.info("🏁 Council session complete!")
 
                 # Log predictions for each expert
                 for opinion in discussion:
                     if current_price:
-                        tracker.log_prediction(
-                            agent_role=opinion['expert'],
-                            prediction=opinion['analysis'],
-                            timeframe=timeframe,
-                            entry_price=current_price
-                        )
+                        log_prediction_safe(tracker, opinion['expert'], opinion['analysis'], timeframe, current_price)
 
                 # Add performance metrics to the response
                 leaderboard = tracker.get_leaderboard()
@@ -402,7 +419,7 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
                 }
 
             except Exception as e:
-                logger.error(f"❌ Consensus building error: {str(e)}")
+                color_logger.error(f"❌ Consensus building error: {str(e)}")
                 return {
                     "discussion": discussion,
                     "consensus": {"error": str(e)},
@@ -414,8 +431,8 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             raise ValueError("Invalid mode. Choose 'fast', 'deep', or 'council'.")
 
     except Exception as e:
-        logger.error(f"❌ Error type: {type(e)}")
-        logger.error(f"❌ Error details: {str(e)}")
+        color_logger.error(f"❌ Error type: {type(e)}")
+        color_logger.error(f"❌ Error details: {str(e)}")
         return f"Sorry, I couldn't process your request at the moment. Error: {str(e)}"
 
 # New function to update prediction outcomes
@@ -432,7 +449,7 @@ def enrich_prompt_with_context(prompt: str, market_data: Dict) -> str:
         rag_results = query_pinecone(prompt)
         context_data = "\n".join([match['metadata']['text'] for match in rag_results['matches']])
     except Exception as e:
-        logger.warning(f"Failed to get RAG context: {str(e)}")
+        color_logger.warning(f"Failed to get RAG context: {str(e)}")
         context_data = "No historical context available"
 
     # Get latest market data from Kalshi
@@ -440,7 +457,7 @@ def enrich_prompt_with_context(prompt: str, market_data: Dict) -> str:
         kalshi_events = get_events(limit=5)
         market_context = json.dumps(kalshi_events, indent=2)
     except Exception as e:
-        logger.warning(f"Failed to get Kalshi data: {str(e)}")
+        color_logger.warning(f"Failed to get Kalshi data: {str(e)}")
         market_context = "No market data available"
 
     # Enhance prompt with additional context
@@ -454,3 +471,109 @@ LIVE MARKET DATA:
 {market_context}
 """
     return enhanced_prompt
+
+# Update the response parsing
+def parse_expert_response(response_text: str) -> Dict:
+    """Parse expert response with better error handling"""
+    try:
+        # Clean the response text
+        clean_text = (response_text.replace('```json\n', '')
+                     .replace('```', '')
+                     .replace('\n', ' ')
+                     .strip())
+
+        # Find the first '{' and last '}'
+        start_idx = clean_text.find('{')
+        end_idx = clean_text.rfind('}')
+
+        if start_idx == -1 or end_idx == -1:
+            raise ValueError("No valid JSON object found in response")
+
+        # Extract just the JSON object
+        json_str = clean_text[start_idx:end_idx + 1]
+
+        # Parse JSON
+        parsed = json.loads(json_str)
+
+        # Validate and clean the response
+        cleaned_response = {
+            "prediction": str(parsed.get('prediction', '')).strip(),
+            "confidence": int(float(parsed.get('confidence', 0))),
+            "factors": [str(f).strip() for f in parsed.get('factors', [])[:3]],
+            "risks": [str(r).strip() for r in parsed.get('risks', [])[:3]]
+        }
+
+        # Validate required fields
+        if not cleaned_response["prediction"] or not cleaned_response["factors"]:
+            raise ValueError("Missing required fields in response")
+
+        color_logger.info(json.dumps({
+            'component': 'expert_response',
+            'status': 'success',
+            'prediction': cleaned_response["prediction"],
+            'confidence': cleaned_response["confidence"]
+        }))
+
+        return cleaned_response
+
+    except Exception as e:
+        color_logger.error(f"Response parsing error: {str(e)}\nResponse text: {response_text[:200]}...")
+        return {
+            "prediction": "Error parsing response",
+            "confidence": 0,
+            "factors": ["Error parsing expert response"],
+            "risks": ["Unable to analyze risks due to parsing error"]
+        }
+
+def generate_expert_prompt(expert: Dict, enriched_prompt: str) -> str:
+    """Generate a more structured expert prompt"""
+    expertise_focus = {
+        "Technical Analyst": "ONLY analyze price patterns, technical indicators, and market volume data",
+        "Sentiment Analyst": "ONLY analyze social media trends, news sentiment, and public opinion",
+        "Macro Economist": "ONLY analyze market fundamentals, economic indicators, and industry trends",
+        "Risk Manager": "ONLY analyze risk metrics, position sizing, and risk/reward ratios"
+    }
+
+    return f"""You are a {expert['role']} with a {expert['bias']} approach and {expert['style']} trading style.
+{expertise_focus[expert['role']]}
+
+Return ONLY a valid JSON object with NO additional text or formatting:
+{{
+    "prediction": "clear win/loss prediction",
+    "confidence": number between 0-100,
+    "factors": [
+        "factor1 specific to {expert['role']}",
+        "factor2 specific to {expert['role']}",
+        "factor3 specific to {expert['role']}"
+    ],
+    "risks": [
+        "risk1 specific to {expert['role']}",
+        "risk2 specific to {expert['role']}",
+        "risk3 specific to {expert['role']}"
+    ]
+}}
+
+Scenario: {enriched_prompt}"""
+
+# Update DataFrame handling
+def log_prediction_safe(tracker, agent_role, prediction, timeframe, entry_price):
+    new_data = {
+        'timestamp': pd.Timestamp.now(),
+        'agent_id': f"{agent_role}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}",
+        'agent_role': agent_role,
+        'prediction': prediction.get('prediction', ''),
+        'confidence': float(prediction.get('confidence', 0)),
+        'timeframe': timeframe,
+        'entry_price': float(entry_price),
+        'target_price': float(tracker._extract_target_price(prediction.get('prediction', ''))),
+        'stop_loss': float(tracker._calculate_stop_loss(entry_price, prediction)),
+        'actual_outcome': 0.0,
+        'pnl': 0.0,
+        'accuracy_score': 0.0
+    }
+
+    # Create new row with correct dtypes
+    new_row = pd.DataFrame([new_data]).astype(tracker.performance_log.dtypes)
+
+    # Concatenate with existing data
+    tracker.performance_log = pd.concat([tracker.performance_log, new_row], ignore_index=True)

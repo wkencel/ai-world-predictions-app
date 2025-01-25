@@ -4,13 +4,8 @@ from dotenv import load_dotenv
 from transformers import AutoTokenizer, AutoModel
 import torch
 import json
-import logging
 from datetime import datetime
-from utils.logger import custom_logger  # Import the singleton instance
-
-# Configure basic logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from utils.logger import color_logger
 
 # Load environment variables
 env_path = os.path.join(os.path.dirname(__file__), '../../../../.env')
@@ -21,14 +16,14 @@ pc = None
 index = None
 index_name = "ai-world-predictions-pinecone"
 
-@custom_logger.log_service_call('pinecone')  # Use the custom_logger instance
-def query_pinecone(query_text):
+@color_logger.log_service_call('pinecone')
+def query_pinecone(query_text: str):
     """Query Pinecone with fallback to mock data"""
     try:
         if not query_text:
             raise ValueError("Query text cannot be empty")
 
-        logger.info(json.dumps({
+        color_logger.info(json.dumps({
             'component': 'pinecone_query',
             'status': 'start',
             'query_length': len(query_text),
@@ -39,7 +34,7 @@ def query_pinecone(query_text):
             query_vector = text_to_vector(query_text)
             results = index.query(query_vector, top_k=5, include_metadata=True)
 
-            logger.info(json.dumps({
+            color_logger.info(json.dumps({
                 'component': 'pinecone_query',
                 'status': 'success',
                 'matches_found': len(results.get('matches', [])),
@@ -51,7 +46,7 @@ def query_pinecone(query_text):
             raise RuntimeError("Pinecone not initialized")
 
     except Exception as e:
-        logger.warning(json.dumps({
+        color_logger.warning(json.dumps({
             'component': 'pinecone_query',
             'status': 'error',
             'error': str(e),
@@ -82,7 +77,7 @@ def text_to_vector(text):
         vector = torch.mean(outputs.last_hidden_state, dim=1).squeeze().tolist()
         return vector
     except Exception as e:
-        logger.warning(json.dumps({
+        color_logger.warning(json.dumps({
             'component': 'text_to_vector',
             'status': 'error',
             'error': str(e),
@@ -97,28 +92,28 @@ try:
         pc = Pinecone(api_key=pinecone_api_key)
         try:
             index = pc.Index(index_name)
-            logger.info(json.dumps({
+            color_logger.info(json.dumps({
                 'component': 'pinecone_setup',
                 'status': 'success',
                 'message': 'Connected to existing index',
                 'timestamp': datetime.now().isoformat()
             }))
         except Exception as e:
-            logger.warning(json.dumps({
+            color_logger.warning(json.dumps({
                 'component': 'pinecone_setup',
                 'status': 'creating_index',
                 'message': f'Index {index_name} not found, using mock data',
                 'timestamp': datetime.now().isoformat()
             }))
     else:
-        logger.warning(json.dumps({
+        color_logger.warning(json.dumps({
             'component': 'pinecone_setup',
             'status': 'no_api_key',
             'message': 'PINECONE_API_KEY not found, will use mock data',
             'timestamp': datetime.now().isoformat()
         }))
 except Exception as e:
-    logger.warning(json.dumps({
+    color_logger.warning(json.dumps({
         'component': 'pinecone_setup',
         'status': 'error',
         'error': str(e),
@@ -129,13 +124,13 @@ except Exception as e:
 try:
     tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
     model = AutoModel.from_pretrained('bert-base-uncased')
-    logger.info(json.dumps({
+    color_logger.info(json.dumps({
         'component': 'bert_setup',
         'status': 'success',
         'timestamp': datetime.now().isoformat()
     }))
 except Exception as e:
-    logger.warning(json.dumps({
+    color_logger.warning(json.dumps({
         'component': 'bert_setup',
         'status': 'error',
         'error': str(e),
@@ -152,14 +147,14 @@ def upsert_data_to_pinecone(data):
     except Exception as e:
         raise RuntimeError(f"Failed to upsert data to Pinecone: {str(e)}")
 
-@custom_logger.log_service_call('pinecone')
+@color_logger.log_service_call('pinecone')
 def query_pinecone(query_text):
     """Query Pinecone with fallback to mock data"""
     try:
         if not query_text:
             raise ValueError("Query text cannot be empty")
 
-        logger.info(json.dumps({
+        color_logger.info(json.dumps({
             'component': 'pinecone_query',
             'status': 'start',
             'query_length': len(query_text),
@@ -168,7 +163,7 @@ def query_pinecone(query_text):
 
         if pc and index:
             # For now, return mock data even if we have a connection
-            logger.info(json.dumps({
+            color_logger.info(json.dumps({
                 'component': 'pinecone_query',
                 'status': 'success',
                 'message': 'Using mock data for development',
@@ -192,7 +187,7 @@ def query_pinecone(query_text):
         }
 
     except Exception as e:
-        logger.warning(json.dumps({
+        color_logger.warning(json.dumps({
             'component': 'pinecone_query',
             'status': 'error',
             'error': str(e),
