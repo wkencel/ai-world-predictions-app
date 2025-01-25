@@ -2,8 +2,11 @@
 from flask import Flask, jsonify, request
 from services.kalshi import get_events, get_event, get_markets, get_market, get_trades
 from services.openai import generate_response
+from flask_cors import CORS
+import traceback
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/')
 def home():
@@ -34,11 +37,28 @@ def predict():
 
         response = generate_response(prompt, mode=mode, timeframe=timeframe)
 
-        return jsonify({
-            "success": True,
-            "prediction_result": response
-        })
+        # Handle different response formats based on mode
+        if mode == 'council':
+            # Return the full council response structure
+            return jsonify({
+                "success": True,
+                "consensus": {
+                    "final_prediction": response.get("consensus", {}).get("final_prediction", "Consensus building..."),
+                    "confidence_level": response.get("consensus", {}).get("confidence_level", 0)
+                },
+                "discussion": response.get("discussion", []),
+                "mode": "council"
+            })
+        else:
+            # Return simple prediction for fast/deep modes
+            return jsonify({
+                "success": True,
+                "prediction_result": response
+            })
+
     except Exception as e:
+        print(f"Error in predict endpoint: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({
             "success": False,
             "error": str(e)
@@ -69,16 +89,30 @@ def kalshi_event(event_ticker):
 @app.route('/kalshi/markets', methods=['GET'])
 def kalshi_markets():
     try:
-        limit = int(request.args.get('limit', 100))
-        cursor = request.args.get('cursor', None)
-        event_ticker = request.args.get('event_ticker', None)
-        series_ticker = request.args.get('series_ticker', None)
-        status = request.args.get('status', None)
-        tickers = request.args.get('tickers', None)
-        markets = get_markets(limit=limit, cursor=cursor, event_ticker=event_ticker, series_ticker=series_ticker, status=status, tickers=tickers)
+        # Use the mock data from get_events
+        events_data = get_events(limit=10)
+
+        # Transform the events data into a format suitable for the frontend
+        markets = []
+        for event in events_data.get('events', []):
+            for market in event.get('markets', []):
+                markets.append({
+                    'ticker': market['ticker'],
+                    'title': event['title'],
+                    'status': event['status'],
+                    'odds': market.get('odds'),
+                    'volume': market.get('volume'),
+                    'description': f"Event: {event['title']} - Market: {market['ticker']}"
+                })
+
         return jsonify(markets)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error in /kalshi/markets: {str(e)}")
+        print(traceback.format_exc())  # Print the full stack trace
+        return jsonify({
+            "error": "Internal server error",
+            "message": str(e)
+        }), 500
 
 @app.route('/kalshi/market/<ticker>', methods=['GET'])
 def kalshi_market(ticker):

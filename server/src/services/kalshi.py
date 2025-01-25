@@ -124,7 +124,34 @@ def get_events(limit=100, cursor=None, status=None, series_ticker=None, with_nes
                     {
                         "ticker": "GSW_WIN",
                         "odds": 1.85,
-                        "volume": 150000
+                        "volume": 150000,
+                        "description": "Golden State Warriors to win"
+                    }
+                ]
+            },
+            {
+                "ticker": "NBA_BOS_MIA_20240320",
+                "title": "Celtics vs Heat",
+                "status": "active",
+                "markets": [
+                    {
+                        "ticker": "BOS_WIN",
+                        "odds": 1.65,
+                        "volume": 180000,
+                        "description": "Boston Celtics to win"
+                    }
+                ]
+            },
+            {
+                "ticker": "NBA_DEN_PHX_20240320",
+                "title": "Nuggets vs Suns",
+                "status": "upcoming",
+                "markets": [
+                    {
+                        "ticker": "DEN_WIN",
+                        "odds": 1.95,
+                        "volume": 120000,
+                        "description": "Denver Nuggets to win"
                     }
                 ]
             }
