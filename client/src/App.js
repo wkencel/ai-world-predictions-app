@@ -2,10 +2,19 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function App() {
-  const [prediction, setPrediction] = useState('');
+  const [predictions, setPredictions] = useState({
+    fast: '',
+    deep: '',
+    council: ''
+  });
   const [prompt, setPrompt] = useState('');
   const [markets, setMarkets] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [marketsError, setMarketsError] = useState(null);
+  const [loading, setLoading] = useState({
+    fast: false,
+    deep: false,
+    council: false
+  });
 
   useEffect(() => {
     fetchMarkets();
@@ -14,38 +23,138 @@ function App() {
   const fetchMarkets = async () => {
     try {
       const response = await axios.get('http://localhost:5000/kalshi/markets');
-      setMarkets(response.data);
+      if (response.data && Array.isArray(response.data)) {
+        setMarkets(response.data);
+        setMarketsError(null);
+      } else {
+        throw new Error('Invalid markets data format');
+      }
     } catch (error) {
       console.error('Error fetching markets:', error);
+      setMarketsError(error.response?.data?.message || 'Unable to load markets at this time');
+      setMarkets([]);
     }
   };
 
   const handlePredict = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await axios.post('http://localhost:5000/predict', {
-        prompt: prompt,
-        mode: 'fast',
-        timeframe: 'short'
-      });
-      setPrediction(response.data.prediction_result);
-    } catch (error) {
-      console.error('Error making prediction:', error);
-      setPrediction('Error making prediction');
-    }
-    setLoading(false);
+
+    // Reset predictions
+    setPredictions({
+      fast: '',
+      deep: '',
+      council: ''
+    });
+
+    // Make all three predictions in parallel
+    const modes = ['fast', 'deep', 'council'];
+    modes.forEach(async (mode) => {
+      setLoading(prev => ({ ...prev, [mode]: true }));
+      try {
+        const response = await axios.post('http://localhost:5000/predict', {
+          prompt: prompt,
+          mode: mode,
+          timeframe: 'short'
+        });
+
+        // Handle the response based on mode
+        if (mode === 'council') {
+          setPredictions(prev => ({
+            ...prev,
+            [mode]: {
+              consensus: response.data.consensus,
+              discussion: response.data.discussion
+            }
+          }));
+        } else {
+          setPredictions(prev => ({
+            ...prev,
+            [mode]: response.data.prediction_result
+          }));
+        }
+      } catch (error) {
+        console.error(`Error making ${mode} prediction:`, error);
+        setPredictions(prev => ({
+          ...prev,
+          [mode]: `Error making ${mode} prediction: ${error.message}`
+        }));
+      }
+      setLoading(prev => ({ ...prev, [mode]: false }));
+    });
   };
+
+  const renderPredictionBox = (mode) => (
+    <div className={`prediction-box ${mode}`}>
+      <h3>{mode.charAt(0).toUpperCase() + mode.slice(1)} Prediction</h3>
+      <div className="result-box">
+        <div className="prediction-content">
+          {loading[mode] ? (
+            <div className="loading-indicator">
+              Generating {mode} prediction...
+            </div>
+          ) : predictions[mode] ? (
+            mode === 'council' ? (
+              <div>
+                <div className="council-consensus">
+                  <h4>Final Consensus</h4>
+                  <p>{predictions[mode].consensus?.final_prediction || 'Consensus building...'}</p>
+                  <p>Confidence: {predictions[mode].consensus?.confidence_level || 0}%</p>
+                </div>
+
+                {predictions[mode].discussion && predictions[mode].discussion.length > 0 && (
+                  <div className="council-experts">
+                    <h4>Expert Opinions</h4>
+                    {predictions[mode].discussion.map((expert, index) => (
+                      <div key={index} className="expert-opinion">
+                        <h5>{expert.expert}</h5>
+                        <div className="expert-analysis">
+                          <p><strong>Prediction:</strong> {expert.analysis.prediction}</p>
+                          <p><strong>Confidence:</strong> {expert.analysis.confidence}%</p>
+                          {expert.analysis.factors && (
+                            <div className="factors">
+                              <p><strong>Key Factors:</strong></p>
+                              <ul>
+                                {expert.analysis.factors.map((factor, idx) => (
+                                  <li key={idx}>{factor}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {expert.analysis.risks && (
+                            <div className="risks">
+                              <p><strong>Risk Factors:</strong></p>
+                              <ul>
+                                {expert.analysis.risks.map((risk, idx) => (
+                                  <li key={idx}>{risk}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="prediction-text">
+                {predictions[mode]}
+              </div>
+            )
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="container">
       <header>
         <h1>AI World Predictions</h1>
-        <p className="subtitle">Bold Predictions for Tomorrow's Reality</p>
+        <p className="subtitle">Multi-Model Prediction Analysis</p>
       </header>
 
       <main>
-        {/* Prediction Section */}
         <section className="prediction-section">
           <h2>Make a Prediction</h2>
           <form onSubmit={handlePredict} className="prediction-form">
@@ -57,48 +166,22 @@ function App() {
             />
             <button
               type="submit"
-              disabled={loading}
-              className={`predict-button ${loading ? 'loading' : ''}`}
+              disabled={Object.values(loading).some(Boolean)}
+              className="predict-button"
             >
-              {loading ? 'Generating Bold Prediction...' : 'Get Bold Prediction'}
+              Get Predictions
             </button>
           </form>
 
-          {prediction && (
-            <div className="prediction-result">
-              <h3>Bold Prediction</h3>
-              <div className="result-box">
-                <div className="prediction-content">
-                  {prediction}
-                </div>
-                <div className="prediction-disclaimer">
-                  This is a speculative prediction. Make your own financial decisions.
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Markets Section */}
-        <section className="markets-section">
-          <h2>Available Markets</h2>
-          <div className="markets-grid">
-            {markets.map((market, index) => (
-              <div key={index} className="market-card">
-                <h3>{market.title || market.ticker}</h3>
-                {market.description && <p>{market.description}</p>}
-                <div className="market-footer">
-                  <span className="market-ticker">{market.ticker}</span>
-                  {market.status && (
-                    <span className={`market-status ${market.status.toLowerCase()}`}>
-                      {market.status}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="predictions-grid">
+            {renderPredictionBox('fast')}
+            {renderPredictionBox('deep')}
+            {renderPredictionBox('council')}
           </div>
         </section>
+
+        {/* Temporarily comment out markets section until backend is fixed */}
+        {/* <section className="markets-section">...</section> */}
       </main>
     </div>
   );

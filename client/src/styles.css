@@ -190,3 +190,105 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Add to existing styles */
+
+.predictions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.prediction-box {
+  background: var(--card-background);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-box.fast {
+  border-top: 4px solid #22c55e;
+}
+
+.prediction-box.deep {
+  border-top: 4px solid #3b82f6;
+}
+
+.prediction-box.council {
+  border-top: 4px solid #8b5cf6;
+}
+
+.loading-indicator {
+  color: #6b7280;
+  font-style: italic;
+  animation: pulse 2s infinite;
+}
+
+.council-consensus {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-left: 4px solid #8b5cf6;
+}
+
+.council-consensus h4 {
+  color: #4c1d95;
+  margin: 0 0 1rem 0;
+}
+
+.council-experts {
+  margin-top: 2rem;
+}
+
+.expert-opinion {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.expert-opinion h5 {
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.expert-analysis ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.expert-analysis li {
+  margin: 0.25rem 0;
+  color: #4b5563;
+}
+
+.factors {
+  margin: 1rem 0;
+}
+
+.risks {
+  margin: 1rem 0;
+  color: #991b1b;
+}
+
+.error-message {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.loading-message {
+  color: #6b7280;
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+}
