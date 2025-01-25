@@ -10,12 +10,17 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from db.pinecone.setup_pinecone import query_pinecone
 from services.kalshi import get_events
+from utils.logger import custom_logger  # Import our custom logger
 
 # Determine the path to the root directory's .env file
 dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env')
 
 # Load environment variables from the specified .env file
 load_dotenv(dotenv_path=dotenv_path)
+
+# Configure basic logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Initialize OpenAI client
 api_key = os.getenv("OPENAI_API_KEY")
@@ -36,14 +41,6 @@ COUNCIL_MODEL = 'gpt-4o'  # Model for expert council
 
 # Architecture: user input -> prompt -> model  -> response
 # we also need some way of getting our prediction outcome into the model
-
-# Configure detailed logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-logger = logging.getLogger(__name__)
 
 # New class to track agent performance
 class AgentPerformanceTracker:
@@ -181,6 +178,7 @@ class AgentPerformanceTracker:
 # Update the generate_response function to use the tracker
 tracker = AgentPerformanceTracker()
 
+@custom_logger.log_service_call('openai')  # Use custom_logger instead of logger
 def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', current_price=None):
     """
     Updated generate_response function that includes RAG and market data
@@ -263,16 +261,27 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
                 logger.info(f"💭 Expert Bias: {expert['bias']}")
                 logger.info(f"🎯 Trading Style: {expert['style']}")
 
-                expert_prompt = f"""You are a {expert['role']} with a {expert['bias']} approach
-                and {expert['style']} trading style. Analyze this scenario and provide your response in this EXACT format:
+                expert_prompt = f"""You are a {expert['role']} with a {expert['bias']} approach and {expert['style']} trading style.
+                Analyze this scenario and provide your prediction. Format your response EXACTLY as shown in the example, with no additional text or markdown:
+
+                Example format:
                 {{
-                    "prediction": "your specific prediction here",
-                    "confidence": "confidence level 0-100",
-                    "factors": ["factor1", "factor2", "factor3"],
-                    "risks": ["risk1", "risk2", "risk3"]
+                    "prediction": "Warriors to win",
+                    "confidence": 85,
+                    "factors": [
+                        "factor 1",
+                        "factor 2",
+                        "factor 3"
+                    ],
+                    "risks": [
+                        "risk 1",
+                        "risk 2",
+                        "risk 3"
+                    ]
                 }}
 
-                Scenario: {enriched_prompt}"""
+                Scenario to analyze:
+                {enriched_prompt}"""
 
                 try:
                     logger.info("🤔 Expert is analyzing the scenario...")
@@ -321,13 +330,16 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             logger.info("\n📣 Starting Phase 2: Building Consensus")
             logger.info("🤝 Moderator is reviewing all expert opinions...")
 
-            consensus_prompt = f"""As the council moderator, analyze these expert opinions and provide a final consensus in this EXACT format:
+            consensus_prompt = f"""As the council moderator, analyze these expert opinions and provide a final consensus.
+            Format your response EXACTLY as shown in the example, with no additional text or markdown:
+
+            Example format:
             {{
-                "final_prediction": "specific prediction here",
-                "confidence_level": "0-100",
+                "final_prediction": "Warriors to win",
+                "confidence_level": 85,
                 "profit_strategy": "detailed strategy here",
                 "risk_assessment": "risk assessment here",
-                "sentiment_score": "0-100"
+                "sentiment_score": 75
             }}
 
             Expert Opinions:
