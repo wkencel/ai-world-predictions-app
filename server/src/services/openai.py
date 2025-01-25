@@ -8,6 +8,8 @@ import logging
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+from db.pinecone.setup_pinecone import query_pinecone
+from services.kalshi import get_events
 
 # Determine the path to the root directory's .env file
 dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env')
@@ -181,7 +183,7 @@ tracker = AgentPerformanceTracker()
 
 def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', current_price=None):
     """
-    Updated generate_response function that logs predictions and tracks performance
+    Updated generate_response function that includes RAG and market data
     """
     try:
         if not os.getenv("OPENAI_API_KEY"):
@@ -189,15 +191,16 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
 
         logger.info("="*50)
         logger.info(f"🤖 Starting new prediction request - Mode: {mode}")
-        logger.info(f"📝 Prompt: {prompt}")
-        logger.info(f"⏱️ Timeframe: {timeframe}")
-        logger.info("="*50)
+
+        # Enrich prompt with context
+        enriched_prompt = enrich_prompt_with_context(prompt, current_price)
+        logger.info(f"📝 Enriched Prompt: {enriched_prompt[:200]}...")
 
         if mode == 'fast':
             logger.info("🚀 Initiating FAST mode with o1-mini model")
             logger.info("📊 Optimizing for speed and conciseness...")
 
-            messages = [{"role": "user", "content": prompt}]
+            messages = [{"role": "user", "content": enriched_prompt}]
 
             response = client.chat.completions.create(
                 model=FAST_MODEL,
@@ -225,7 +228,7 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
                     logger.info("📈 Processing technical indicators...")
                     logger.info("🌍 Evaluating global market conditions...")
 
-            messages = [{"role": "user", "content": prompt}]
+            messages = [{"role": "user", "content": enriched_prompt}]
 
             logger.info("🎯 Finalizing deep analysis...")
             response = client.chat.completions.create(
@@ -269,7 +272,7 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
                     "risks": ["risk1", "risk2", "risk3"]
                 }}
 
-                Scenario: {prompt}"""
+                Scenario: {enriched_prompt}"""
 
                 try:
                     logger.info("🤔 Expert is analyzing the scenario...")
@@ -407,3 +410,35 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
 def update_prediction_outcome(agent_id: str, actual_price: float):
     """Update the outcome of a prediction"""
     tracker.update_outcome(agent_id, actual_price, datetime.now())
+
+# Add this function after the AgentPerformanceTracker class
+def enrich_prompt_with_context(prompt: str, market_data: Dict) -> str:
+    """Enrich the prompt with RAG context and market data"""
+
+    # Get relevant context from Pinecone
+    try:
+        rag_results = query_pinecone(prompt)
+        context_data = "\n".join([match['metadata']['text'] for match in rag_results['matches']])
+    except Exception as e:
+        logger.warning(f"Failed to get RAG context: {str(e)}")
+        context_data = "No historical context available"
+
+    # Get latest market data from Kalshi
+    try:
+        kalshi_events = get_events(limit=5)
+        market_context = json.dumps(kalshi_events, indent=2)
+    except Exception as e:
+        logger.warning(f"Failed to get Kalshi data: {str(e)}")
+        market_context = "No market data available"
+
+    # Enhance prompt with additional context
+    enhanced_prompt = f"""
+{prompt}
+
+HISTORICAL CONTEXT:
+{context_data}
+
+LIVE MARKET DATA:
+{market_context}
+"""
+    return enhanced_prompt
