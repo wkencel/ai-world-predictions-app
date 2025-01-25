@@ -31,3 +31,7 @@ yarn-error.log*
 # Virtual Environments
 .venv
 ai-predict
+
+# Add to .gitignore
+**/__pycache__/
+*.pyc
