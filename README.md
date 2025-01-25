@@ -65,3 +65,75 @@ The server handles data processing, API interactions, and serves the client appl
 ## Getting Started
 
 To get started with the project, clone the repository and install the necessary dependencies for both the client and server. Then, run the development servers.
+
+## Setup
+
+1. **Run the Setup Script**:
+   ```bash
+   python setup.py
+   ```
+   This script will:
+   - Create a Python virtual environment
+   - Install Python dependencies
+   - Install client-side npm dependencies
+
+2. **Activate the Virtual Environment**:
+   - On macOS and Linux:
+     ```bash
+     source ai-predict/bin/activate
+     ```
+   - On Windows:
+     ```bash
+     ai-predict\Scripts\activate
+     ```
+
+3. **Create a `.env` file** in the root directory (or in the `server` and/or `client` directories if you have separate configurations). This file will store your environment variables. For example:
+   ```plaintext
+   # Server environment variables
+   OPENAI_API_KEY=your_openai_api_key
+   PINECONE_API_KEY=your_pinecone_api_key
+   POLYMARKET_API_KEY=your_polymarket_api_key
+   KALSHI_API_KEY=your_kalshi_api_key
+
+   # Client environment variables
+   REACT_APP_API_URL=your_api_url
+   ```
+
+   **Note**: Do not commit the `.env` file to git. It contains sensitive information like API keys and database credentials.
+
+## Collaborators
+
+- Ashley Pean
+- Dave Laflam
+- Jamie Highsmith
+- John Maltese
+- Will Kencel
+
+## Setting Up and Running the Pinecone Database
+
+To use the Pinecone vector database with this application, follow these steps:
+
+1. **Create an Index on Pinecone**:
+   - Go to the [Pinecone website](https://www.pinecone.io/).
+   - Log in or create an account if you don't have one.
+   - Navigate to the "Indexes" section and click on "Create Index".
+   - Choose the configuration "text-embedding-ada-002" for your index.
+
+2. **Configure Your Environment**:
+   - Ensure you have your Pinecone API key. You can find this in the Pinecone dashboard under the "API Keys" section.
+   - Add your Pinecone API key to the `.env` file in the root directory:
+     ```plaintext
+     PINECONE_API_KEY=your_pinecone_api_key
+     ```
+
+3. **Run the Pinecone Setup Script**:
+   - Navigate to the directory containing the `setup_pinecone.py` script:
+     ```bash
+     cd server/src/db/pinecone
+     ```
+   - Run the script to initialize and connect to your Pinecone index:
+     ```bash
+     python3 setup_pinecone.py
+     ```
+
+This will set up the connection to your Pinecone index and allow you to start using it with the application.
