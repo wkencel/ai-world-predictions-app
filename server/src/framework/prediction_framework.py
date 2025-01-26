@@ -24,6 +24,10 @@ class PredictionFramework:
         }
         self.vector_store = PineconeManager()
         self.expert_council = ExpertCouncil()
+        self.market_collector = MarketDataCollector()
+        self.sentiment_analyzer = SentimentAnalyzer()
+        self.historical_manager = HistoricalDataManager()
+        self.performance_tracker = AgentPerformanceTracker()
 
         color_logger.info("🚀 Prediction Framework initialized")
 
@@ -69,5 +73,75 @@ class PredictionFramework:
         except Exception as e:
             color_logger.error(f"Error in arbitrage calculation: {str(e)}")
             return {"error": str(e)}
+
+    async def generate_prediction(self, query: str) -> Dict:
+        """Generate a prediction based on the query"""
+        try:
+            # Gather and process data
+            raw_data = await self._gather_data()
+            processed_data = self._process_data(raw_data)
+
+            # Get expert predictions
+            predictions = await self.expert_council.get_predictions(
+                query=query,
+                processed_data=processed_data
+            )
+
+            # Generate consensus
+            consensus = await self.expert_council.generate_consensus(predictions)
+
+            # Identify potential arbitrage opportunities
+            arbitrage = self._identify_arbitrage(
+                predictions=predictions,
+                market_data=processed_data.get('market', {}),
+                sentiment=processed_data.get('sentiment', {})
+            )
+
+            return {
+                'success': True,
+                'prediction_id': f"pred_{datetime.now().timestamp()}",
+                'query': query,
+                'consensus': consensus,
+                'expert_predictions': predictions,
+                'arbitrage_opportunities': arbitrage,
+                'supporting_data': {
+                    'market': processed_data.get('market', {}),
+                    'sentiment': processed_data.get('sentiment', {}),
+                    'historical': processed_data.get('historical', {})
+                },
+                'timestamp': datetime.now().isoformat()
+            }
+
+        except Exception as e:
+            color_logger.error(f"Error generating prediction: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+
+    def update_model_performance(self, prediction_id: str, actual_outcome: float):
+        """Update the model's performance metrics based on actual outcomes"""
+        try:
+            # Update performance tracking for each expert
+            for expert in self.expert_council.experts:
+                self.performance_tracker.update_performance(
+                    agent=expert['role'],
+                    prediction_id=prediction_id,
+                    actual_outcome=actual_outcome,
+                    was_correct=self._evaluate_prediction_accuracy(prediction_id, actual_outcome)
+                )
+            color_logger.info(f"✅ Updated performance tracking for prediction {prediction_id}")
+        except Exception as e:
+            color_logger.error(f"Error updating model performance: {str(e)}")
+
+    def _evaluate_prediction_accuracy(self, prediction_id: str, actual_outcome: float) -> bool:
+        """Evaluate if a prediction was correct based on actual outcome"""
+        try:
+            # Implement your accuracy evaluation logic here
+            # This is a placeholder implementation
+            return True
+        except Exception as e:
+            color_logger.error(f"Error evaluating prediction accuracy: {str(e)}")
+            return False
 
     # ... rest of the methods from your code ...

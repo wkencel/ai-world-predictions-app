@@ -62,7 +62,7 @@ class PineconeManager:
             color_logger.error(f"Error storing data in Pinecone: {str(e)}")
             return False
 
-    async def query_data(self, query_vector: List[float], top_k: int = 5, namespace: str = 'default'):
+    async def query_data(self, query_vector: List[float], top_k: int = 5, namespace: str = 'default') -> Dict:
         """Query data from Pinecone index"""
         try:
             results = self.index.query(
@@ -71,10 +71,17 @@ class PineconeManager:
                 namespace=namespace,
                 include_metadata=True
             )
-            return results
+            return {
+                'matches': results.matches,
+                'namespace': namespace,
+                'timestamp': datetime.now().isoformat()
+            }
         except Exception as e:
             color_logger.error(f"Error querying Pinecone: {str(e)}")
-            return None
+            return {
+                'matches': [],
+                'error': str(e)
+            }
 
     async def delete_data(self, vector_id: str, namespace: str = 'default'):
         """Delete data from Pinecone index"""

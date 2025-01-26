@@ -1,6 +1,6 @@
 # services/openai.py
 import os
-from openai import OpenAI
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 import time
 import json
@@ -11,6 +11,7 @@ from db.pinecone.setup_pinecone import query_pinecone
 from services.kalshi import get_events
 from utils.logger import color_logger
 import openai
+from collections import defaultdict
 
 # Determine the path to the root directory's .env file
 dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env')
@@ -22,7 +23,8 @@ load_dotenv(dotenv_path=dotenv_path)
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     raise EnvironmentError("OPENAI_API_KEY not found in environment variables")
-client = OpenAI(
+
+client = AsyncOpenAI(
     api_key=api_key,
     timeout=60.0,  # Increase timeout for longer operations
     max_retries=3  # Add retries for reliability
@@ -31,7 +33,7 @@ client = OpenAI(
 # Model definitions
 DEEP_MODEL = os.getenv('DEEP_MODEL')  # Deep thinking model
 FAST_MODEL = os.getenv('FAST_MODEL')  # Quick response model
-COUNCIL_MODEL = os.getenv('COUNCIL_MODEL')  # Model for expert council
+COUNCIL_MODEL = "gpt-4"  # Model for expert council
 
 # todo: pull in some RAG store data
 # todo: pull in some api data
@@ -47,49 +49,85 @@ class AgentPerformanceTracker:
     """Tracks and manages expert agent performance"""
 
     def __init__(self):
-        self.performance_data = self._load_initial_data()
+        self.performance_data = defaultdict(lambda: {
+            'total_trades': 0,
+            'total_pnl': 0,
+            'wins': 0,
+            'losses': 0
+        })
+        self._load_initial_data()
+        self._log_leaderboard()  # Now safe to call after initialization
         color_logger.info("Performance tracker initialized with historical data")
-        self._log_leaderboard()
 
-    def _load_initial_data(self) -> Dict:
+    def _load_initial_data(self):
         """Load initial performance data"""
-        # Example initial data - in production, this would come from a database
-        return {
-            "Macro Economist": {"total_trades": 1, "total_pnl": 5.7, "correct_predictions": 1},
-            "Risk Manager": {"total_trades": 1, "total_pnl": 5.5, "correct_predictions": 1},
-            "Technical Analyst": {"total_trades": 1, "total_pnl": 5.4, "correct_predictions": 1},
-            "Sentiment Analyst": {"total_trades": 1, "total_pnl": 7.9, "correct_predictions": 1}
-        }
+        try:
+            # Initialize with empty data for each expert role
+            default_roles = [
+                "Technical Analyst",
+                "Sentiment Analyst",
+                "Macro Economist",
+                "Risk Manager"
+            ]
+
+            for role in default_roles:
+                if role not in self.performance_data:
+                    self.performance_data[role] = {
+                        'total_trades': 0,
+                        'total_pnl': 0,
+                        'wins': 0,
+                        'losses': 0
+                    }
+
+            color_logger.info("Initialized performance tracking data")
+        except Exception as e:
+            color_logger.error(f"Error loading initial performance data: {str(e)}")
 
     def _log_leaderboard(self):
-        """Log current leaderboard"""
-        leaderboard = []
-        for agent, data in self.performance_data.items():
-            stats = {
-                "agent_role": agent,
-                "total_trades": data["total_trades"],
-                "total_pnl": data["total_pnl"],
-                "avg_pnl": data["total_pnl"] / data["total_trades"],
-                "average_accuracy": data["correct_predictions"] / data["total_trades"],
-                "win_rate": data["correct_predictions"] / data["total_trades"]
-            }
-            leaderboard.append(stats)
+        """Log current performance leaderboard"""
+        try:
+            leaderboard = []
+            for agent, data in self.performance_data.items():
+                total_trades = data["total_trades"]
+                win_rate = (data["wins"] / total_trades) if total_trades > 0 else 0
+                avg_pnl = (data["total_pnl"] / total_trades) if total_trades > 0 else 0
 
-        # Sort by average PnL
-        leaderboard.sort(key=lambda x: x["avg_pnl"], reverse=True)
-        color_logger.info(f"Initial Leaderboard:\n{json.dumps(leaderboard, indent=2)}")
+                leaderboard.append({
+                    "agent": agent,
+                    "total_trades": total_trades,
+                    "win_rate": win_rate,
+                    "avg_pnl": avg_pnl
+                })
 
-    def update_performance(self, agent_id: str, pnl: float, was_correct: bool):
-        """Update agent performance metrics"""
-        agent_role = agent_id.split('_')[0]
-        if agent_role not in self.performance_data:
-            color_logger.warning(f"No prediction found for agent_id: {agent_id}")
-            return
+            # Sort by win rate
+            leaderboard.sort(key=lambda x: x["win_rate"], reverse=True)
 
-        self.performance_data[agent_role]["total_trades"] += 1
-        self.performance_data[agent_role]["total_pnl"] += pnl
-        if was_correct:
-            self.performance_data[agent_role]["correct_predictions"] += 1
+            color_logger.info("Performance Leaderboard:")
+            for entry in leaderboard:
+                color_logger.info(
+                    f"{entry['agent']}: "
+                    f"Win Rate: {entry['win_rate']:.2%}, "
+                    f"Avg PNL: {entry['avg_pnl']:.2f}, "
+                    f"Total Trades: {entry['total_trades']}"
+                )
+        except Exception as e:
+            color_logger.error(f"Error generating leaderboard: {str(e)}")
+
+    def update_performance(self, agent: str, prediction_id: str, actual_outcome: float, was_correct: bool):
+        """Update performance metrics for an agent"""
+        try:
+            if agent in self.performance_data:
+                self.performance_data[agent]['total_trades'] += 1
+                self.performance_data[agent]['total_pnl'] += actual_outcome
+                if was_correct:
+                    self.performance_data[agent]['wins'] += 1
+                else:
+                    self.performance_data[agent]['losses'] += 1
+
+                color_logger.info(f"Updated performance for {agent}: {self.performance_data[agent]}")
+                self._log_leaderboard()  # Update leaderboard after performance change
+        except Exception as e:
+            color_logger.error(f"Error updating performance: {str(e)}")
 
     def log_prediction(self, prediction_data: Dict):
         """Log a new prediction"""
@@ -118,6 +156,12 @@ class ExpertCouncil:
         ]
         self.performance_tracker = tracker  # Use the global tracker instance
 
+    async def get_predictions(self, query: str = None, **kwargs) -> Dict:
+        """Alias for get_consensus to maintain compatibility"""
+        # Use query if provided, otherwise look for prompt in kwargs
+        prompt = query if query is not None else kwargs.get('prompt', '')
+        return await self.get_consensus(prompt)
+
     async def get_consensus(self, prompt: str) -> Dict:
         """Get consensus from all experts"""
         expert_predictions = {}
@@ -136,26 +180,60 @@ class ExpertCouncil:
             except Exception as e:
                 color_logger.error(f"Error getting prediction from {expert['role']}: {str(e)}")
 
-        consensus = self._generate_consensus(expert_predictions)
+        consensus = await self.generate_consensus(expert_predictions)
         return {
             "consensus": consensus,
             "expert_predictions": expert_predictions
         }
 
-    def _generate_consensus(self, predictions: Dict) -> Dict:
-        """Generate consensus from individual predictions"""
+    async def generate_consensus(self, expert_predictions: Dict) -> Dict:
+        """Generate consensus from expert predictions"""
         try:
-            # Implement consensus logic here
-            # For now, return a simple average
+            if not expert_predictions:
+                return {"error": "No expert predictions available"}
+
+            # Aggregate predictions
+            consensus_prompt = self._create_consensus_prompt(expert_predictions)
+
+            response = await client.chat.completions.create(
+                model=COUNCIL_MODEL,
+                messages=[{"role": "user", "content": consensus_prompt}],
+                temperature=0.5,
+            )
+
+            # Extract the prediction from response
+            consensus_text = response.choices[0].message.content
+
             return {
-                "final_prediction": "Consensus prediction",
-                "confidence_level": 0.8,
-                "supporting_experts": list(predictions.keys()),
+                "prediction": consensus_text,
+                "confidence": self._calculate_confidence(expert_predictions),
+                "expert_predictions": expert_predictions,
                 "timestamp": datetime.now().isoformat()
             }
         except Exception as e:
             color_logger.error(f"Error generating consensus: {str(e)}")
-            return {"error": str(e)}
+            return {
+                "prediction": "",
+                "confidence": 0,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+
+    def _create_consensus_prompt(self, expert_predictions: Dict) -> str:
+        """Create a prompt for generating consensus"""
+        prompt = "Based on the following expert predictions, provide a consensus summary:\n\n"
+        for role, prediction in expert_predictions.items():
+            prompt += f"{role}: {prediction}\n"
+        prompt += "\nConsensus summary:"
+        return prompt
+
+    def _calculate_confidence(self, expert_predictions: Dict) -> float:
+        """Calculate confidence score based on expert agreement"""
+        try:
+            # Simple implementation - can be made more sophisticated
+            return len(expert_predictions) / len(self.experts)
+        except Exception:
+            return 0.0
 
     def update_performance(self, prediction_id: str, actual_outcome: float):
         """Update expert performance metrics"""
@@ -163,9 +241,10 @@ class ExpertCouncil:
             # Update performance for each expert
             for expert in self.experts:
                 self.performance_tracker.update_performance(
-                    f"{expert['role']}_{prediction_id}",
+                    expert['role'],
+                    prediction_id,
                     actual_outcome,
-                    True  # You might want to calculate this based on the prediction
+                    actual_outcome > 0
                 )
         except Exception as e:
             color_logger.error(f"Error updating performance: {str(e)}")

@@ -24,6 +24,9 @@ class PredictionFrameworkTester:
             raw_data = await self.framework._gather_data()
             self._log_data_gathering_results(raw_data)
 
+            if not any(raw_data.values()):
+                raise ValueError("No data gathered from any source")
+
             # 2. Test data processing
             color_logger.info("🔄 Testing data processing...")
             processed_data = self.framework._process_data(raw_data)

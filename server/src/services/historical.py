@@ -74,8 +74,8 @@ class HistoricalDataManager:
     async def _fetch_prediction_history(self) -> Dict:
         """Fetch historical predictions and outcomes"""
         try:
-            # Query vector store for historical predictions
-            results = self.pinecone.query(
+            # Update to use query_data instead of query
+            results = await self.pinecone.query_data(
                 query_vector=[0] * 1536,  # Replace with actual query vector
                 top_k=100
             )

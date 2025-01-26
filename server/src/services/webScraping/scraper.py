@@ -337,116 +337,57 @@ def memory_optimise(messages: list):
     return messages
 
 @traceable(name="Call agent")
-def call_agent(
-    prompt, system_prompt, tools, plan, data_points, entity_name, links_scraped
-):
-    """
-    Call the AI agent to perform tasks based on the given prompt and tools.
-
-    Args:
-        prompt (str): The user's prompt.
-        system_prompt (str): The system instructions for the AI.
-        tools (List[Dict]): Available tools for the AI to use.
-        plan (bool): Whether to create a plan before execution.
-        data_points (List[Dict]): The list of data points to extract.
-        entity_name (str): The name of the entity being researched.
-        links_scraped (List[str]): List of already scraped links.
-
-    Returns:
-        str: The final response from the AI agent.
-    """
-    messages = []
-
-    if plan:
-        messages.append(
-            {
-                "role": "user",
-                "content": (
-                    system_prompt
-                    + "  "
-                    + prompt
-                    + "  Let's think step by step, make a plan first"
-                ),
-            }
-        )
-
-        chat_response = chat_completion_request(
-            messages, tool_choice="none", tools=tools
-        )
-        messages = [
-            {"role": "user", "content": (system_prompt + "  " + prompt)},
-            {"role": "assistant", "content": chat_response.choices[0].message.content},
-        ]
-
-    else:
-        messages.append({"role": "user", "content": (system_prompt + "  " + prompt)})
+async def call_agent(prompt, system_prompt, tools, plan, data_points, entity_name, links_scraped):
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt}
+    ]
 
     state = "running"
-
-    for message in messages:
-        pretty_print_conversation(message)
-
     while state == "running":
-        chat_response = chat_completion_request(messages, tool_choice=None, tools=tools)
+        try:
+            chat_response = await chat_completion_request(messages, tool_choice=None, tools=tools)
 
-        if isinstance(chat_response, Exception):
-            print("Failed to get a valid response:", chat_response)
-            state = "finished"
-        else:
+            if isinstance(chat_response, Exception):
+                raise chat_response
+
             current_choice = chat_response.choices[0]
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": current_choice.message.content,
-                    "tool_calls": current_choice.message.tool_calls,
-                }
-            )
-            pretty_print_conversation(messages[-1])
+            messages.append({
+                "role": "assistant",
+                "content": current_choice.message.content,
+                "tool_calls": current_choice.message.tool_calls,
+            })
 
             if current_choice.finish_reason == "tool_calls":
                 tool_calls = current_choice.message.tool_calls
                 for tool_call in tool_calls:
                     function = tool_call.function.name
-                    arguments = json.loads(
-                        tool_call.function.arguments
-                    )  # Parse the JSON string to a Python dict
+                    arguments = json.loads(tool_call.function.arguments)
 
+                    result = None
                     if function == "scrape":
-                        result = tools_list[function](
-                            arguments["url"], data_points, links_scraped
-                        )
+                        result = await tools_list[function](arguments["url"], data_points, links_scraped)
                     elif function == "update_data":
-                        result = tools_list[function](
-                            data_points, arguments["datas_update"]
-                        )
-                    # elif function == "search":
-                    #     result = tools_list[function](
-                    #         arguments["query"], entity_name, data_points
-                    #     )
-                    # elif function == "file_reader":
-                    #     result = tools_list[function](arguments["file_url"], links_scraped)
+                        result = await tools_list[function](data_points, arguments["datas_update"])
 
-                    messages.append(
-                        {
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "name": function,
-                            "content": result,
-                        }
-                    )
-                    pretty_print_conversation(messages[-1])
-
-            if current_choice.finish_reason == "stop":
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": function,
+                        "content": result,
+                    })
+            else:
                 state = "finished"
 
-            # messages = memory_optimise(messages)
+        except Exception as e:
+            color_logger.error(f"Error in call_agent: {str(e)}")
+            state = "finished"
 
-    return messages[-1]["content"]
-
+    return messages[-1].get("content", "Failed to generate response")
 
 # run agent to do website search
 @traceable(name="#1 Website domain research")
-def website_search(entity_name: str, website: str, data_points, links_scraped):
+async def website_search(entity_name: str, website: str, data_points, links_scraped):
     """
     Perform a search on the entity's website to find relevant information.
 
@@ -526,7 +467,7 @@ def website_search(entity_name: str, website: str, data_points, links_scraped):
         {data_keys_to_search}
         """
 
-        response = call_agent(
+        response = await call_agent(
             prompt,
             system_prompt,
             tools,
@@ -622,7 +563,7 @@ def website_search(entity_name: str, website: str, data_points, links_scraped):
 #         return response
 
 @traceable(name="Run research")
-def run_research(entity_name, website, data_points):
+async def run_research(entity_name, website, data_points):
     """
     Run the complete research process for an entity.
 
@@ -636,8 +577,8 @@ def run_research(entity_name, website, data_points):
     """
     links_scraped = []
 
-    response1 = website_search(entity_name, website, data_points, links_scraped)
-    # response2 = internet_search(entity_name, website, data_points, links_scraped)
+    response1 = await website_search(entity_name, website, data_points, links_scraped)
+    # response2 = await internet_search(entity_name, website, data_points, links_scraped)
 
     return data_points
 
@@ -658,21 +599,26 @@ def save_json_pretty(data, filename):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-# Test Run
-entity_name = "The Sporting News"
-website = "https://www.sportingnews.com/us/soccer"
-special_instruction = "This is a website of sports news, you should scrape the website to find the latest news about various sports. Look for as much data as possible, but don't scrape the same url twice. There are many links to articles as well as categories for articles broken down by sport. They are generally broken down by sport. You should scrape each sport section to get comprehensive  coverage of articles from each sport."
+# Test Run - Wrap in async function and use asyncio
+async def main():
+    entity_name = "The Sporting News"
+    website = "https://www.sportingnews.com/us/soccer"
+    special_instruction = "This is a website of sports news, you should scrape the website to find the latest news about various sports. Look for as much data as possible, but don't scrape the same url twice. There are many links to articles as well as categories for articles broken down by sport. They are generally broken down by sport. You should scrape each sport section to get comprehensive  coverage of articles from each sport."
 
+    data_keys = list(DataPoints.__fields__.keys())
+    data_fields = DataPoints.__fields__
 
-data_keys = list(DataPoints.__fields__.keys())
-data_fields = DataPoints.__fields__
+    data_points = [{"name": key, "value": None, "reference": None, "description": data_fields[key].description} for key in data_keys]
 
-data_points = [{"name": key, "value": None, "reference": None, "description": data_fields[key].description} for key in data_keys]
+    data = await run_research(entity_name, website, data_points)
 
-data = run_research(entity_name, website, data_points)
+    # Specify the filename
+    filename = f"{entity_name}.json"
 
-# Specify the filename
-filename = f"{entity_name}.json"
+    # Save the data
+    save_json_pretty(data_points, filename)
 
-# Save the data
-save_json_pretty(data_points, filename)
+# Add this at the bottom of the file
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
