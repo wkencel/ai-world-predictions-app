@@ -158,4 +158,4 @@ def polymarket_market(condition_id):
         return jsonify({"error": "An unexpected error occurred.", "details": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=4000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
