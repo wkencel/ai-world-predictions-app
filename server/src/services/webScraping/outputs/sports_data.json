@@ -1,0 +1,129 @@
+[
+    {
+        "author": "Yahoo Sports",
+        "date": "2025-01-28",
+        "players": [
+            {
+                "injuryStatus": "Healthy",
+                "name": "Saquon Barkley",
+                "position": "Running Back",
+                "stats": [
+                    "Led performance in playoff victory over Commanders"
+                ],
+                "team": "Philadelphia Eagles"
+            },
+            {
+                "injuryStatus": "Healthy",
+                "name": "AJ Brown",
+                "position": "Wide Receiver",
+                "stats": [
+                    "Top performer in playoff games"
+                ],
+                "team": "Philadelphia Eagles"
+            },
+            {
+                "injuryStatus": "Healthy",
+                "name": "Patrick Mahomes",
+                "position": "Quarterback",
+                "stats": [
+                    "Calm and methodical performance in AFC Championship"
+                ],
+                "team": "Kansas City Chiefs"
+            }
+        ],
+        "quote": "They dive into the Eagles’ dominant win over the Commanders, led by Saquon Barkley’s \"middle finger year,\" and the Chiefs’ narrow victory over the Bills, fueled by Mahomes’ calm and methodical performance.",
+        "summary": "The Super Bowl LIX is set with the Philadelphia Eagles facing the Kansas City Chiefs in New Orleans on February 9, 2025. Analysts Gerald McCoy and Kyle Van Noy discuss the Eagles' commanding win over the Commanders and the Chiefs' close victory against the Bills. They highlight key performances, including Saquon Barkley's impactful plays, Mahomes’ strategic leadership, AJ Brown's standout performance, and notable coaching changes. The article covers playoff highlights and the hosts' end-of-season awards and predictions for the Super Bowl.",
+        "teams": [
+            {
+                "name": "Philadelphia Eagles",
+                "people": [
+                    {
+                        "injuryStatus": "Healthy",
+                        "name": "Saquon Barkley",
+                        "position": "Running Back",
+                        "stats": [
+                            "Led performance in playoff victory over Commanders"
+                        ],
+                        "team": "Philadelphia Eagles"
+                    },
+                    {
+                        "injuryStatus": "Healthy",
+                        "name": "AJ Brown",
+                        "position": "Wide Receiver",
+                        "stats": [
+                            "Top performer in playoff games"
+                        ],
+                        "team": "Philadelphia Eagles"
+                    }
+                ],
+                "stats": []
+            },
+            {
+                "name": "Kansas City Chiefs",
+                "people": [
+                    {
+                        "injuryStatus": "Healthy",
+                        "name": "Patrick Mahomes",
+                        "position": "Quarterback",
+                        "stats": [
+                            "Calm and methodical performance in AFC Championship"
+                        ],
+                        "team": "Kansas City Chiefs"
+                    }
+                ],
+                "stats": [
+                    "Narrow victory over the Bills"
+                ]
+            }
+        ],
+        "title": "Super Bowl LIX Matchup Set: Eagles vs Chiefs",
+        "url": "https://www.yahoo.com/sports/super-bowl-lix-matchup-set-eagles-vs-chiefs"
+    },
+    {
+        "author": "",
+        "date": "January 28, 2024",
+        "players": [
+            {
+                "injuryStatus": "Active",
+                "name": "Patrick Mahomes",
+                "position": "Quarterback",
+                "stats": [
+                    "Passed for 4,740 yards, 38 touchdowns in the 2023 season",
+                    "Rated as a top quarterback with a unique playing style"
+                ],
+                "team": "Kansas City Chiefs"
+            }
+        ],
+        "quote": "So as you go home tonight, I pray we become better people.",
+        "summary": "Brittany Mahomes, wife of Kansas City Chiefs quarterback Patrick Mahomes, criticized Buffalo Bills fans for their conduct after the Chiefs' win in the AFC Championship game. Brittany shared an Instagram post referencing an incident where Bills fans displayed a Kermit the Frog toy in a noose wearing a Chiefs jersey during a previous game between the teams, which she found disturbing. Patrick Mahomes addressed the frequent jokes about his voice, likened to Kermit the Frog, and spoke about his experiences with such comments growing up. The Chiefs' victory set up another Super Bowl appearance against the Philadelphia Eagles, whom they beat in the 2023 Super Bowl. The upcoming Super Bowl will occur at the Caesars Superdome in New Orleans. The article also reflects on the Chiefs' consistent performance, reaching five Super Bowls in six years. It discusses the broader debate over whether NFL games favor popular teams like the Chiefs and includes contrasting views from personalities like Dave Portnoy, who criticized the refereeing in the Chiefs-Bills game.",
+        "teams": [
+            {
+                "name": "Kansas City Chiefs",
+                "people": [],
+                "stats": [
+                    "Reached their fifth Super Bowl in six years.",
+                    "Defeated Buffalo Bills 32-29 in the AFC Championship.",
+                    "Noted for consistent winning in close games."
+                ]
+            },
+            {
+                "name": "Buffalo Bills",
+                "people": [],
+                "stats": [
+                    "Lost to Kansas City Chiefs 32-29 in the AFC Championship.",
+                    "Had issues with officiating decisions during the game."
+                ]
+            },
+            {
+                "name": "Philadelphia Eagles",
+                "people": [],
+                "stats": [
+                    "Defeated the Kansas City Chiefs in the 2023 Super Bowl.",
+                    "Nicknamed the “Kelce Bowl” due to the matchup between brothers."
+                ]
+            }
+        ],
+        "title": "Brittany Mahomes slams Bills fans over ‘disgusting’ act as she celebrates Chiefs victory",
+        "url": ""
+    }
+]

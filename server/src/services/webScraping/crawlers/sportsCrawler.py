@@ -1,20 +1,17 @@
 import openai
 import instructor
 import json
+import time  # Add this import at the top with your other imports
 from firecrawl import FirecrawlApp
-from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Type, Union
 from openai import OpenAI
 from dotenv import load_dotenv
 from firecrawl import FirecrawlApp
-from langsmith import traceable
 from langsmith.wrappers import wrap_openai
-from termcolor import colored
-from tenacity import retry, wait_random_exponential, stop_after_attempt
-from pydantic import BaseModel, Field
-from models import DataPoints
-from scraperUtils import extract_data_from_content, filter_empty_fields, create_filtered_model
-from sportsLinks import extract_yahoo_sports_links
+import os
+
+from ..freshRSS.sportsLinks import extract_yahoo_sports_links
+from ..models.sportsModel import SportsArticleExtraction
 
 # Get fresh links from RSS feed
 sports_links = extract_yahoo_sports_links()
@@ -48,6 +45,9 @@ def save_json_pretty(data, filename):
         filename (str): The name of the file
     """
     try:
+        # Set path to outputs directory
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'outputs', filename)
+        
         # Convert Pydantic model to dict if necessary
         if hasattr(data, 'model_dump'):  # For Pydantic v2
             data = data.model_dump()
@@ -59,14 +59,14 @@ def save_json_pretty(data, filename):
         
         # Try to read existing file
         try:
-            with open(filename, "r", encoding="utf-8") as file:
+            with open(filepath, "r", encoding="utf-8") as file:
                 existing_data = json.load(file)
                 if not isinstance(existing_data, list):
                     existing_data = [existing_data]
         except FileNotFoundError:
-            print(f"Creating new file: {filename}")
+            print(f"Creating new file: {filepath}")
         except json.JSONDecodeError:
-            print(f"Error reading existing file. Creating new file: {filename}")
+            print(f"Error reading existing file. Creating new file: {filepath}")
             
         # Append new data
         if isinstance(data, list):
@@ -75,16 +75,21 @@ def save_json_pretty(data, filename):
             existing_data.append(data)
             
         # Write back to file
-        with open(filename, "w", encoding="utf-8") as file:
+        with open(filepath, "w", encoding="utf-8") as file:
             json.dump(existing_data, file, indent=4, sort_keys=True, ensure_ascii=False)
-        print(f"Data successfully appended to {filename}")
+        print(f"Data successfully appended to {filepath}")
         
     except Exception as e:
         print(f"An error occurred: {e}")
 
+
+
+# Start timer for first loop
+start_time_crawl = time.time()
+
 # careful with this, as scraping this many links could reach rate limits / cost $$
 # if len(sports_links) > 60:
-for link in sports_links[:2]:
+for link in sports_links[:2]: # adjust this to scrape more links
     crawled_data = app.crawl_url(
         url=link,
         params={
@@ -103,33 +108,15 @@ for link in sports_links[:2]:
     print('crawled_data total: ', crawled_data['total'])
     print('crawled_data status: ', crawled_data['status'])
     print('crawled_data creditsUsed: ', crawled_data['creditsUsed'])
+    print('crawled_data for one entry: ', crawled_data["data"][0])
 
-    print('crawled_data for one entry json: ', crawled_data["data"][0])
+    # End timer for first loop and print duration
+    end_time_crawl = time.time()
+    print(f"URL crawling took {end_time_crawl - start_time_crawl:.2f} seconds")
 
-# Sports Data Schema (these models will be moved out to a models directory)
-    class Player(BaseModel):
-        name: str = Field(..., description="The name of the player")
-        team: str = Field(..., description="The team of the player")
-        position: str = Field(..., description="The position of the player. Example: Forward, Center, etc.")
-        stats: List[str] = Field(..., description="The stats of the player. If these are not available, you can add relevant stats from reliable sources like ESPN, Yahoo Sports, etc.")
-        injuryStatus: str = Field(..., description="The injury status of the player")
+    # Start timer for second loop
+    start_time_process = time.time()
 
-    class Team(BaseModel):
-        name: str = Field(..., description="The name of the team")
-        people: List[Player] = Field(..., description="The players, coaches, and other relevant people in the team or mentioned in the article.")
-        stats: List[str] = Field(..., description="The stats of the team. If these are not available, you can add relevant stats from reliable sources like ESPN, Yahoo Sports, etc.")
-
-    class SportsArticleExtraction(BaseModel):
-        title: str = Field(..., description="The title of the article")
-        author: str = Field(..., description="The author of the article")
-        date: str = Field(..., description="The date of the article")
-        url: str = Field(..., description="The URL of the article")
-        summary: str = Field(..., description="A detailed and descriptive summary of the article. It should not generalize facts or statistics, but rather provide a detailed summary of the article.")
-        quote: str = Field(..., description="A quote from the article")
-        players: List[Player] = Field(..., description="The players, coaches, and other relevant people in the article.")
-        teams: List[Team] = Field(..., description="The teams in the article")
-
-    # def extract_sports_data(crawled_data):
     for item in crawled_data["data"]:
         completion = client.beta.chat.completions.parse(
             model="gpt-4o",
@@ -143,13 +130,6 @@ for link in sports_links[:2]:
         sports_data_json = completion.choices[0].message.parsed
         save_json_pretty(sports_data_json, "sports_data.json")
 
-# print('sports_data_json: ', sports_data_json)
-
-# save_json_pretty(crawled_data["data"][0]["json"], "crawled_data.json")
-
-# data = app.scrape_url('https://docs.firecrawl.dev/', {
-#     'formats': ['json'],
-#     'jsonOptions': {
-#         'schema': ExtractSchema.model_json_schema(),
-#     }
-# })
+    # End timer for second loop and print duration
+    end_time_process = time.time()
+    print(f"Data processing to JSON took {end_time_process - start_time_process:.2f} seconds")
