@@ -22,14 +22,14 @@ MAX_TOKEN = 100000 # this can be adjusted
 app = FirecrawlApp()
 
 
-def extract_yahoo_sports_links():
+def extract_us_news_links():   
     """
     Fetches and parses the Yahoo Sports RSS feed to extract unique links.
     
     Returns:
         list: A list of unique URLs found in the RSS feed
     """
-    url = "https://sports.yahoo.com/rss/"
+    url = "https://news.yahoo.com/rss/us"
     links_set = set()  # No duplicates
     
     try:
@@ -57,7 +57,7 @@ def extract_yahoo_sports_links():
 
 # To run file directly:
 if __name__ == "__main__":
-    sports_links = extract_yahoo_sports_links()
-    print(f"Found {len(sports_links)} links:")
-    for link in sports_links:
+    us_news_links = extract_us_news_links()
+    print(f"Found {len(us_news_links)} links:")
+    for link in us_news_links:
         print(link)
