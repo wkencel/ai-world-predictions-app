@@ -125,5 +125,178 @@
         ],
         "title": "Brittany Mahomes slams Bills fans over ‘disgusting’ act as she celebrates Chiefs victory",
         "url": ""
+    },
+    {
+        "author": "Yahoo Sports",
+        "date": "January 2025 (Exact date not provided)",
+        "players": [
+            {
+                "injuryStatus": "Healthy",
+                "name": "Caleb Love",
+                "position": "Guard",
+                "stats": [
+                    "Hit a 50-footer at the buzzer to force overtime"
+                ],
+                "team": "University of Carolina (assumed)"
+            },
+            {
+                "injuryStatus": "Healthy",
+                "name": "Bradley Beal",
+                "position": "Shooting Guard",
+                "stats": [],
+                "team": "Washington Wizards (assumed)"
+            },
+            {
+                "injuryStatus": "Healthy",
+                "name": "Jimmy Butler",
+                "position": "Small Forward",
+                "stats": [],
+                "team": "Miami Heat (assumed)"
+            },
+            {
+                "injuryStatus": "Healthy",
+                "name": "Amen Thompson",
+                "position": "Point Guard",
+                "stats": [
+                    "Has been performing well since joining the starting lineup"
+                ],
+                "team": "Houston Rockets (assumed)"
+            }
+        ],
+        "quote": "Carroll wants everyone in the organization to continually strive to get better, saying 'You're either competing or you're not.'",
+        "summary": "The Kansas City Chiefs have advanced to the 2025 Super Bowl by defeating the Buffalo Bills. The Chiefs will face the Philadelphia Eagles in Super Bowl LIX, which is scheduled to take place in New Orleans on February 9, 2025. The article also quotes Carroll emphasizing the importance of continuous improvement within the organization and discusses various other sports stories, including rumors about Bradley Beal and Jimmy Butler, and recent performances by Amen Thompson and the Rockets.",
+        "teams": [
+            {
+                "name": "Kansas City Chiefs",
+                "people": [],
+                "stats": [
+                    "Earned a spot in the 2025 Super Bowl"
+                ]
+            },
+            {
+                "name": "Buffalo Bills",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Philadelphia Eagles",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Miami Heat",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Washington Wizards",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Houston Rockets",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Minnesota Timberwolves",
+                "people": [],
+                "stats": [
+                    "The Timberwolves won against the Hawks"
+                ]
+            },
+            {
+                "name": "Atlanta Hawks",
+                "people": [],
+                "stats": []
+            }
+        ],
+        "title": "The Chiefs beat the Bills in order to earn a spot in the 2025 Super Bowl",
+        "url": "https://www.yahoosports.com/chiefs-super-bowl-2025"
+    },
+    {
+        "author": "Unspecified",
+        "date": "2025-01-26",
+        "players": [
+            {
+                "injuryStatus": "",
+                "name": "Brock Nelson",
+                "position": "Center",
+                "stats": [],
+                "team": "New York Islanders"
+            },
+            {
+                "injuryStatus": "",
+                "name": "Trent Frederic",
+                "position": "",
+                "stats": [
+                    "7 goals and 14 points this season"
+                ],
+                "team": "Boston Bruins"
+            },
+            {
+                "injuryStatus": "",
+                "name": "Sam Bennett",
+                "position": "",
+                "stats": [
+                    "On pace for 25 goals this year"
+                ],
+                "team": "Florida Panthers"
+            }
+        ],
+        "quote": "\"They may not have thought they could re-sign Rantanen, but the Avalanche are still competing for the Stanley Cup.\"",
+        "summary": "The article discusses three potential trade targets for the Colorado Avalanche as they approach the NHL trade deadline on March 7. The Avalanche are seen as contenders for the Stanley Cup but have made controversial trade decisions. Brock Nelson of the New York Islanders, known for his playoff experience, and Trent Frederic from the Boston Bruins, valued for his physical game, are highlighted as players who could strengthen the Avs' line-up. Finally, Sam Bennett of the Florida Panthers, a key player in their previous championship, is considered for his scoring ability and physical play. The article emphasizes the challenges of fitting these players under the salary cap and the competitive nature of acquiring them.",
+        "teams": [
+            {
+                "name": "Colorado Avalanche",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "New York Islanders",
+                "people": [
+                    {
+                        "injuryStatus": "",
+                        "name": "Brock Nelson",
+                        "position": "Center",
+                        "stats": [],
+                        "team": "New York Islanders"
+                    }
+                ],
+                "stats": []
+            },
+            {
+                "name": "Boston Bruins",
+                "people": [
+                    {
+                        "injuryStatus": "",
+                        "name": "Trent Frederic",
+                        "position": "",
+                        "stats": [
+                            "7 goals and 14 points this season"
+                        ],
+                        "team": "Boston Bruins"
+                    }
+                ],
+                "stats": []
+            },
+            {
+                "name": "Florida Panthers",
+                "people": [
+                    {
+                        "injuryStatus": "",
+                        "name": "Sam Bennett",
+                        "position": "",
+                        "stats": [
+                            "On pace for 25 goals this year"
+                        ],
+                        "team": "Florida Panthers"
+                    }
+                ],
+                "stats": []
+            }
+        ],
+        "title": "Three Trade Targets For The Colorado Avalanche",
+        "url": "https://www.thn.com"
     }
 ]
