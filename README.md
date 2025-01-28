@@ -95,6 +95,9 @@ To get started with the project, clone the repository and install the necessary 
    POLYMARKET_API_KEY=your_polymarket_api_key
    KALSHI_API_KEY=your_kalshi_api_key
 
+   # Polymarket API Configuration
+   POLYMARKET_API_URL="https://clob.polymarket.com"
+
    # Client environment variables
    REACT_APP_API_URL=your_api_url
    ```
@@ -104,7 +107,7 @@ To get started with the project, clone the repository and install the necessary 
 ## Collaborators
 
 - Ashley Pean
-- Dave Laflam
+- Dave LaFlam
 - Jamie Highsmith
 - John Maltese
 - Will Kencel
