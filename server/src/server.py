@@ -1,5 +1,8 @@
 # app.py
+import requests
 from flask import Flask, jsonify, request
+
+from services.polymarket import get_polymarket_market, get_polymarket_markets
 from services.kalshi import get_events, get_event, get_markets, get_market, get_trades
 from services.openai import generate_response
 from flask_cors import CORS
@@ -136,6 +139,23 @@ def kalshi_trades():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/polymarket/markets', methods=['GET'])
+def polymarket_markets():
+    try:
+        markets = get_polymarket_markets()
+        return jsonify(markets)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/polymarket/market/<condition_id>', methods=['GET'])
+def polymarket_market(condition_id):
+    try:
+        market = get_polymarket_market(condition_id)
+        return jsonify(market)
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Failed to connect to Polymarket API.", "details": str(e)}), 503
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred.", "details": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

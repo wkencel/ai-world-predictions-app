@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 import json
 from datetime import datetime
-from utils.logger import color_logger
+from ...utils.logger import color_logger
 
 # Load environment variables
 env_path = os.path.join(os.path.dirname(__file__), '../../../../.env')
