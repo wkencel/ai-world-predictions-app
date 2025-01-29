@@ -256,7 +256,7 @@ for outcome in historical_outcomes:
     )
 
 @color_logger.log_service_call('openai')  # Use color_logger for the decorator
-def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', current_price=None):
+def generate_response(prompt, mode='fast', max_tokens=500, timeframe='short', current_price=None):
     """
     Updated generate_response function that includes RAG and market data
     """
@@ -300,46 +300,52 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
                 market_context = "\n\n📊 AVAILABLE BETTING MARKETS:\n"
                 for market in markets:
                     market_context += f"""
-• {market['title']} ({market['ticker']})
-  Current Prices: YES ${market['yes_price']} | NO ${market['no_price']}
-  Volume: ${market['volume']:,}
-  ROI: YES {market['yes_roi']:.1f}% | NO {market['no_roi']:.1f}%
-  Implied Prob: YES {market['yes_implied_prob']:.1%} | NO {market['no_implied_prob']:.1%}
-"""
+                    • {market['title']} ({market['ticker']})
+                    Current Prices: YES ${market['yes_price']} | NO ${market['no_price']}
+                    Volume: ${market['volume']:,}
+                    ROI: YES {market['yes_roi']:.1f}% | NO {market['no_roi']:.1f}%
+                    Implied Prob: YES {market['yes_implied_prob']:.1%} | NO {market['no_implied_prob']:.1%}
+                    """
 
                 # Create an enhanced prompt with ROI focus
                 fast_prompt = f"""ANALYZE ROI AND PROVIDE A SPECIFIC BET RECOMMENDATION:
 
-{market_context}
 
-USER QUERY:
-{prompt}
+                Given the date and time is: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-CALCULATE POTENTIAL RETURNS:
-1. If YES wins: (100 - Yes Price) / Yes Price = ROI%
-2. If NO wins: (100 - No Price) / No Price = ROI%
+                and the current market data is:
+                {market_context}
 
-YOU MUST RESPOND IN THIS EXACT FORMAT:
-🎯 RECOMMENDED BET:
-[Market Ticker] - [Market Title]
-Position: [YES/NO]
-Entry Price: $[Current Price]
-Potential ROI: [X]%
-Size: [SMALL/MEDIUM/LARGE] (based on ROI and confidence)
-Confidence: [X]%
+                USER QUERY:
+                {prompt}
 
-💰 WHY THIS BET (3 bullet points):
-• [ROI calculation and edge explanation]
-• [Key market inefficiency identified]
-• [Supporting data point]
+                CALCULATE POTENTIAL RETURNS:
+                1. If YES wins: (100 - Yes Price) / Yes Price = ROI%
+                2. If NO wins: (100 - No Price) / No Price = ROI%
 
-⚠️ RISK/REWARD:
-• Risk: [Specific downside scenario]
-• Max Loss: $[Entry Price]
-• Max Gain: $[Calculated return]
+                YOU MUST RESPOND IN THIS EXACT FORMAT:
+                🎯 RECOMMENDED BET:
+                [Market Ticker] - [Market Title]
+                Team/Selection: [SPECIFIC TEAM/OUTCOME]
+                Position: [YES/NO]
+                Entry Price: $[Current Price]
+                Potential ROI: [X]%
+                Size: [SMALL/MEDIUM/LARGE] (based on ROI and confidence)
+                Confidence: [X]%
 
-DO NOT PROVIDE ANY OTHER COMMENTARY.
-PICK THE SINGLE BEST BET WITH THE HIGHEST RISK-ADJUSTED ROI."""
+                💰 WHY THIS BET (3 bullet points):
+                • [ROI calculation with exact numbers]
+                • [Specific market inefficiency with data]
+                • [Concrete supporting data point with numbers]
+
+                ⚠️ RISK/REWARD:
+                • Risk: [Specific downside scenario]
+                • Max Loss: $[Entry Price]
+                • Max Gain: $[Exact dollar amount]
+                • Win Probability: [X]%
+
+                DO NOT PROVIDE ANY OTHER COMMENTARY.
+                PICK THE SINGLE BEST BET WITH THE HIGHEST RISK-ADJUSTED ROI."""
 
                 color_logger.info("✨ Enhanced prompt with live market data and ROI calculations")
 
