@@ -214,3 +214,83 @@ def query_pinecone(query_text):
                 }
             ]
         }
+
+def process_and_index_data(json_filename, data_type="default"):
+    """
+    Read JSON data from file and index it in Pinecone
+    Args:
+        json_filename (str): Name of the JSON file to process
+        data_type (str): Type of data to process ("sports", "default", etc.)
+    """
+    try:
+        # Read JSON file
+        with open(os.path.join('outputs', json_filename), 'r') as f:
+            data = json.load(f)
+            
+        # Extract relevant text fields for indexing
+        texts_to_index = []
+        
+        if data_type.lower() == "sports":
+            for article in data:
+                parts = []
+                
+                # Add title and summary
+                if article.get('title'):
+                    parts.append(f"Title: {article['title']}")
+                if article.get('summary'):
+                    parts.append(f"Summary: {article['summary']}")
+                
+                # Add player information
+                if article.get('players'):
+                    for player in article['players']:
+                        player_info = []
+                        if player.get('name'):
+                            player_info.append(f"Player: {player['name']}")
+                        if player.get('team'):
+                            player_info.append(f"Team: {player['team']}")
+                        if player.get('position'):
+                            player_info.append(f"Position: {player['position']}")
+                        if player.get('stats'):
+                            player_info.append(f"Stats: {', '.join(player['stats'])}")
+                        if player_info:
+                            parts.append(" | ".join(player_info))
+                
+                # Add team information
+                if article.get('teams'):
+                    for team in article['teams']:
+                        team_info = []
+                        if team.get('name'):
+                            team_info.append(f"Team: {team['name']}")
+                        if team.get('stats'):
+                            team_info.append(f"Team Stats: {', '.join(team['stats'])}")
+                        if team_info:
+                            parts.append(" | ".join(team_info))
+                
+                # Add quote if it exists
+                if article.get('quote'):
+                    parts.append(f"Quote: {article['quote']}")
+                
+                # Combine all parts with newlines
+                article_text = "\n".join(parts)
+                
+                if article_text.strip():
+                    texts_to_index.append(article_text)
+                    
+        else:  # default handling for other data types
+            for article in data:
+                article_text = f"{article.get('title', '')} {article.get('summary', '')}"
+                if article_text.strip():
+                    texts_to_index.append(article_text)
+        
+        # Index in Pinecone
+        if texts_to_index:
+            print(f"Indexing {len(texts_to_index)} articles in Pinecone...")
+            upsert_data_to_pinecone(texts_to_index)
+            print("Successfully indexed articles in Pinecone")
+            
+            # Optionally delete the JSON file after successful indexing
+            os.remove(os.path.join('outputs', json_filename))
+            print(f"Deleted {json_filename} after successful indexing")
+            
+    except Exception as e:
+        print(f"Error processing and indexing data: {e}")

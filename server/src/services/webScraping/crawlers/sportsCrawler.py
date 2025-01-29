@@ -10,6 +10,8 @@ from firecrawl import FirecrawlApp
 from langsmith.wrappers import wrap_openai
 import os
 
+from db.pinecone.setup_pinecone import process_and_index_data
+
 from ..freshRSS.sportsLinks import extract_yahoo_sports_links
 from ..models.sportsModel import SportsArticleExtraction
 from ..utils.jsonOutputParser import save_json_pretty
@@ -81,6 +83,7 @@ for link in sports_links[:2]: # adjust this to scrape more links
 
         sports_data_json = completion.choices[0].message.parsed
         save_json_pretty(sports_data_json, "sports_data.json")
+    process_and_index_data("sports_data.json", "sports")
 
     # End timer for second loop and print duration
     end_time_process = time.time()
