@@ -6,6 +6,7 @@ import torch
 import json
 from datetime import datetime
 from utils.logger import color_logger
+from utils.logger import color_logger
 
 # Load environment variables
 env_path = os.path.join(os.path.dirname(__file__), '../../../../.env')
@@ -14,6 +15,7 @@ load_dotenv(env_path)
 # Initialize variables
 pc = None
 index = None
+index_name = "ai-world-predictions-2"
 index_name = "ai-world-predictions-2"
 
 @color_logger.log_service_call('pinecone')
@@ -216,6 +218,7 @@ def query_pinecone(query_text):
         }
 
 def process_and_index_data(data_type="default"):
+def process_and_index_data(data_type="default"):
     """
     Read JSON data from file and index it in Pinecone
     Args:
@@ -227,7 +230,7 @@ def process_and_index_data(data_type="default"):
         current_dir = os.path.dirname(__file__)
         outputs_path = os.path.join(current_dir, '..', '..', 'services', 'webScraping', 'outputs', 'sports_data.json')
         
-        with open(outputs_path, 'r') as f:
+        with open(outputs_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             
         # Extract relevant text fields for indexing
@@ -292,7 +295,7 @@ def process_and_index_data(data_type="default"):
             print("Successfully indexed articles in Pinecone")
             
             # Optionally delete the JSON file after successful indexing
-            os.remove(os.path.join('outputs', "sports_data.json"))
+            os.remove(outputs_path)
             print(f"Deleted sports_data.json after successful indexing")
             
     except Exception as e:
