@@ -125,6 +125,7 @@ To use the Pinecone vector database with this application, follow these steps: *
    - Log in or create an account if you don't have one.
    - Navigate to the "Indexes" section and click on "Create Index".
    - Choose the configuration "text-embedding-ada-002" for your index.
+   - Name the index "ai-world-predictions-2"
 2. **Configure Your Environment**:
 
    - Ensure you have your Pinecone API key. You can find this in the Pinecone dashboard under the "API Keys" section.

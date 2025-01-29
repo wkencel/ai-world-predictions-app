@@ -83,7 +83,7 @@ for link in sports_links[:2]: # adjust this to scrape more links
 
         sports_data_json = completion.choices[0].message.parsed
         save_json_pretty(sports_data_json, "sports_data.json")
-    process_and_index_data("sports_data.json", "sports")
+    process_and_index_data("sports")
 
     # End timer for second loop and print duration
     end_time_process = time.time()
