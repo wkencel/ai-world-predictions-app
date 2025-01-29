@@ -68,6 +68,7 @@ for link in finance_links[:2]: # adjust this to scrape more links
     start_time_process = time.time()
 
     for item in crawled_data["data"]:
+        # ! NICK FUN TIMES
         completion = client.beta.chat.completions.parse(
             model="gpt-4o",
             messages=[

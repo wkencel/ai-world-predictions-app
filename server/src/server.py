@@ -38,6 +38,7 @@ def predict():
         mode = data.get('mode', 'fast')
         timeframe = data.get('timeframe', 'short')
 
+        # ! NICK FUN TIMES
         response = generate_response(prompt, mode=mode, timeframe=timeframe)
 
         # Handle different response formats based on mode
