@@ -2,7 +2,7 @@ from typing import List
 from pydantic import BaseModel, Field
 
 # Define the pydantic data structure for the data points
-# These are specific to Science news, but can be modified to fit other news websites
+# These are specific to Science news
 
 # Science Data Schema
 class Figure(BaseModel):
