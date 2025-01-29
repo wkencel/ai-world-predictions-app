@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const BACKEND_PORT = process.env.PORT || 5000;
+const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
+
 function App() {
   const [predictions, setPredictions] = useState({
     fast: '',
@@ -17,12 +20,12 @@ function App() {
   });
 
   useEffect(() => {
-    fetchMarkets();
+    (async () => await fetchMarkets())();
   }, []);
 
   const fetchMarkets = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/kalshi/markets');
+      const response = await axios.get(`${BACKEND_URL}/kalshi/markets`);
       if (response.data && Array.isArray(response.data)) {
         setMarkets(response.data);
         setMarketsError(null);
@@ -48,7 +51,7 @@ function App() {
 
     // Make all three predictions in parallel
     const modes = ['fast', 'deep', 'council'];
-    modes.forEach(async (mode) => {
+    for (const mode of modes) {
       setLoading(prev => ({ ...prev, [mode]: true }));
       try {
         const response = await axios.post('http://localhost:5000/predict', {
@@ -80,7 +83,7 @@ function App() {
         }));
       }
       setLoading(prev => ({ ...prev, [mode]: false }));
-    });
+    }
   };
 
   const renderPredictionBox = (mode) => (
