@@ -354,18 +354,18 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             color_logger.info("🤝 Moderator is reviewing all expert opinions...")
 
             consensus_prompt = f"""As the council moderator, analyze these expert opinions and provide a final consensus.
-Return ONLY a JSON object with no markdown formatting or additional text:
+                Return ONLY a JSON object with no markdown formatting or additional text:
 
-{{
-    "final_prediction": "clear prediction",
-    "confidence_level": 75,
-    "profit_strategy": "detailed strategy",
-    "risk_assessment": "key risks",
-    "sentiment_score": 75
-}}
+                {{
+                    "final_prediction": "clear prediction",
+                    "confidence_level": 75,
+                    "profit_strategy": "detailed strategy",
+                    "risk_assessment": "key risks",
+                    "sentiment_score": 75
+                }}
 
-Expert Opinions:
-{json.dumps(discussion, indent=2)}"""
+                Expert Opinions:
+                {json.dumps(discussion, indent=2)}"""
 
             try:
                 color_logger.info("🧠 Moderator is synthesizing expert opinions...")
