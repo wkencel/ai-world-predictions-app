@@ -29,14 +29,25 @@ DEEP_MODEL = 'gpt-4o'  # Deep thinking model
 FAST_MODEL = 'gpt-4o-mini'  # Quick response model
 COUNCIL_MODEL = 'gpt-4o'  # Model for expert council
 
+
+########################
+# ? Notes:
+
 # todo: pull in some RAG store data
 # todo: pull in some api data
 # todo: pull in some news data
 # todo: pull in web scraper data
 # todo: pull in some other data
 
+# ! FAST: we are going to use the 4o model to get a quick response with with API data
+# ! DEEP: we are going to pull in pinecone data and API data
+# ! COUNCIL: we are going to pull in pinecone data and API data and have a council of experts come up with a prediction
+
 # Architecture: user input -> prompt -> model  -> response
 # we also need some way of getting our prediction outcome into the model
+
+########################
+
 
 # Move AgentPerformanceTracker class to the top of the file, after imports
 class AgentPerformanceTracker:
@@ -268,36 +279,85 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             color_logger.info("🚀 Initiating FAST mode with 4o model")
             color_logger.info("📊 Optimizing for speed and conciseness...")
 
-            # todo: enrich prompt with kalshi data
+            # Fetch and format Kalshi market data
             try:
-                kalshi_markets = get_markets(limit=5, status="active")
-                market_data = []
-                for market in kalshi_markets.get('markets', []):
-                    market_info = {
-                        'ticker': market.get('ticker', ''),
-                        'title': market.get('title', ''),
-                        'yes_price': market.get('yes_price', 0),
-                        'no_price': market.get('no_price', 0),
-                        'volume': market.get('volume', 0)
-                    }
-                    market_data.append(market_info)
-                 # Add market data to prompt
-                market_context = "\n\nRecent Market Data:\n"
-                for market in market_data:
-                    market_context += f"- {market['title']} ({market['ticker']})\n"
-                    market_context += f"  Yes: ${market['yes_price']} | No: ${market['no_price']} | Volume: {market['volume']}\n"
+                # Get active markets with minimum volume
+                kalshi_markets = get_markets(
+                    limit=25,
+                    status="active",
+                    min_volume=1000,  # Only show markets with significant volume
+                    series_ticker="NFL-SB"  # Focus on Super Bowl markets
+                )
 
-                fast_prompt = prompt + market_context
-                color_logger.info("✨ Added Kalshi market data to prompt")
+                # Sort markets by volume to show most active first
+                markets = sorted(
+                    kalshi_markets.get('markets', []),
+                    key=lambda x: x.get('volume', 0),
+                    reverse=True
+                )
+
+                # Create detailed market analysis
+                market_context = "\n\n📊 AVAILABLE BETTING MARKETS:\n"
+                for market in markets:
+                    market_context += f"""
+• {market['title']} ({market['ticker']})
+  Current Prices: YES ${market['yes_price']} | NO ${market['no_price']}
+  Volume: ${market['volume']:,}
+  ROI: YES {market['yes_roi']:.1f}% | NO {market['no_roi']:.1f}%
+  Implied Prob: YES {market['yes_implied_prob']:.1%} | NO {market['no_implied_prob']:.1%}
+"""
+
+                # Create an enhanced prompt with ROI focus
+                fast_prompt = f"""ANALYZE ROI AND PROVIDE A SPECIFIC BET RECOMMENDATION:
+
+{market_context}
+
+USER QUERY:
+{prompt}
+
+CALCULATE POTENTIAL RETURNS:
+1. If YES wins: (100 - Yes Price) / Yes Price = ROI%
+2. If NO wins: (100 - No Price) / No Price = ROI%
+
+YOU MUST RESPOND IN THIS EXACT FORMAT:
+🎯 RECOMMENDED BET:
+[Market Ticker] - [Market Title]
+Position: [YES/NO]
+Entry Price: $[Current Price]
+Potential ROI: [X]%
+Size: [SMALL/MEDIUM/LARGE] (based on ROI and confidence)
+Confidence: [X]%
+
+💰 WHY THIS BET (3 bullet points):
+• [ROI calculation and edge explanation]
+• [Key market inefficiency identified]
+• [Supporting data point]
+
+⚠️ RISK/REWARD:
+• Risk: [Specific downside scenario]
+• Max Loss: $[Entry Price]
+• Max Gain: $[Calculated return]
+
+DO NOT PROVIDE ANY OTHER COMMENTARY.
+PICK THE SINGLE BEST BET WITH THE HIGHEST RISK-ADJUSTED ROI."""
+
+                color_logger.info("✨ Enhanced prompt with live market data and ROI calculations")
 
             except Exception as e:
                 color_logger.warning(f"Could not fetch Kalshi data: {str(e)}")
-
-
+                fast_prompt = prompt
 
             messages = [
-                {"role": "system", "content": "You are a trader and betting expert on prediction markets."},
-                {"role": "user", "content": enriched_prompt}
+                {
+                    "role": "system",
+                    "content": """You are a ruthless ROI-focused prediction market expert.
+                    ALWAYS calculate potential returns before recommending.
+                    ONLY recommend bets with clear positive expected value.
+                    NEVER hedge or provide multiple options.
+                    ALWAYS follow the exact response template.
+                    Focus on finding market inefficiencies."""
+                },
+                {"role": "user", "content": fast_prompt}
             ]
 
             response = client.chat.completions.create(

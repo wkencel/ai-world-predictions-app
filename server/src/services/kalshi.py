@@ -235,31 +235,75 @@ def get_event(event_ticker, with_nested_markets=False):
     return make_request("GET", path, params=params)
 
 
-def get_markets(limit=100, cursor=None, event_ticker=None, series_ticker=None, status=None, tickers=None):
+def get_markets(limit=100, cursor=None, event_ticker=None, series_ticker=None, status=None, tickers=None, min_volume=None, category=None):
     """
-    Fetches a list of markets from the Kalshi API.
+    Fetches a list of markets from the Kalshi API with enhanced filtering.
 
     Args:
-        limit (int): Number of results per page (default: 100).
-        cursor (str, optional): Pagination cursor.
-        event_ticker (str, optional): Filter by event ticker.
-        series_ticker (str, optional): Filter by series ticker.
-        status (str, optional): Filter by market status.
-        tickers (str, optional): Filter by specific market tickers.
+        limit (int): Number of results per page (default: 100)
+        cursor (str, optional): Pagination cursor
+        event_ticker (str, optional): Filter by event ticker
+        series_ticker (str, optional): Filter by series ticker
+        status (str, optional): Filter by market status ('active', 'settled', 'closed')
+        tickers (str, optional): Filter by specific market tickers (comma-separated)
+        min_volume (int, optional): Filter markets with minimum trading volume
+        category (str, optional): Filter by market category
 
     Returns:
-        dict: JSON response containing market data.
+        dict: JSON response containing filtered market data
     """
     path = "/trade-api/v2/markets"
-    params = {k: v for k, v in {
+
+    # Build base params with specific focus on Super Bowl related markets
+    params = {
         "limit": limit,
-        "cursor": cursor,
-        "event_ticker": event_ticker,
-        "series_ticker": series_ticker,
-        "status": status,
-        "tickers": tickers,
-    }.items() if v is not None}
-    return make_request("GET", path, params=params)
+        "status": status or "active",  # Default to active markets
+    }
+
+    # Add optional filters
+    if event_ticker:
+        params["event_ticker"] = event_ticker
+    if series_ticker:
+        params["series_ticker"] = "NFL-SB"  # Focus on Super Bowl markets
+    if tickers:
+        params["tickers"] = tickers
+
+    try:
+        # Make the API request
+        response = make_request("GET", path, params=params)
+
+        if response and 'markets' in response:
+            markets = response['markets']
+
+            # Filter by minimum volume if specified
+            if min_volume:
+                markets = [m for m in markets if m.get('volume', 0) >= min_volume]
+
+            # Filter by category if specified
+            if category:
+                markets = [m for m in markets if m.get('category', '').lower() == category.lower()]
+
+            # Add calculated fields for each market
+            for market in markets:
+                yes_price = float(market.get('yes_price', 0)) / 100
+                no_price = float(market.get('no_price', 0)) / 100
+
+                # Calculate ROI for both YES and NO positions
+                market['yes_roi'] = ((1 - yes_price) / yes_price) * 100 if yes_price > 0 else 0
+                market['no_roi'] = ((1 - no_price) / no_price) * 100 if no_price > 0 else 0
+
+                # Calculate implied probabilities
+                market['yes_implied_prob'] = yes_price
+                market['no_implied_prob'] = no_price
+
+            response['markets'] = markets
+            response['filtered_count'] = len(markets)
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error fetching markets: {str(e)}")
+        return {"markets": [], "error": str(e)}
 
 
 def get_market(ticker: str):
