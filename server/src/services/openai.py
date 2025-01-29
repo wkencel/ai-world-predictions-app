@@ -274,8 +274,8 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
 
 
 
-            kalshi_data = get_kalshi_data(limit=5)
-            prompt = prompt + kalshi_data
+            # kalshi_data = get_kalshi_data(limit=5)
+            # prompt = prompt + kalshi_data
 
             messages = [{"role": "user", "content": enriched_prompt}]
 

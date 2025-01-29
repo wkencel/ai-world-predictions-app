@@ -122,8 +122,20 @@ def make_request(method: str, path: str, params=None):
     print(f"DEBUG - KALSHI_API_URL: {KALSHI_API_URL}")  # Debug line
     print(f"DEBUG - Making request to: {url}")  # Debug line
 
+    # Add required headers
+    headers = {
+        'accept': 'application/json'
+    }
+
     try:
-        response = requests.request(method, url, params=params)
+        response = requests.request(
+            method,
+            url,
+            params=params,
+            headers=headers  # Add headers to the request
+        )
+        print(f"DEBUG - Response status code: {response.status_code}")  # Debug line
+        print(f"DEBUG - Response text: {response.text[:200]}...")  # Debug line
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
