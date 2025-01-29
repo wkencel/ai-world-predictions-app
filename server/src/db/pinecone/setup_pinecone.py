@@ -30,6 +30,7 @@ def query_pinecone(query_text: str):
             'timestamp': datetime.now().isoformat()
         }))
 
+        # ! NICK FUN TIMES
         if pc and index:
             query_vector = text_to_vector(query_text)
             results = index.query(query_vector, top_k=5, include_metadata=True)
@@ -122,6 +123,7 @@ except Exception as e:
 
 # Load BERT model
 try:
+    # ! NICK FUN TIMES
     tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
     model = AutoModel.from_pretrained('bert-base-uncased')
     color_logger.info(json.dumps({
@@ -141,6 +143,7 @@ def upsert_data_to_pinecone(data):
     try:
         if not data:
             raise ValueError("No data provided for upserting")
+        # ! NICK FUN TIMES
         vectors = [(f'vec_{i}', text_to_vector(item), {'source': 'firecrawl'})
                   for i, item in enumerate(data)]
         index.upsert(vectors)
