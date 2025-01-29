@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from db.pinecone.setup_pinecone import query_pinecone
 from services.kalshi import get_events
+# from services.kalshi import get_events, get_kalshi_data
 from utils.logger import color_logger
 
 # Determine the path to the root directory's .env file
@@ -255,6 +256,8 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
         color_logger.info("="*50)
         color_logger.info(f"🤖 Starting new prediction request - Mode: {mode}")
 
+
+
         # Enrich prompt with context
         enriched_prompt = enrich_prompt_with_context(prompt, current_price)
         color_logger.info(f" Enriched Prompt: {enriched_prompt[:200]}...")
@@ -262,6 +265,17 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
         if mode == 'fast':
             color_logger.info("🚀 Initiating FAST mode with o1-mini model")
             color_logger.info("📊 Optimizing for speed and conciseness...")
+
+
+
+
+            # todo: enrich prompt with kalshi data
+
+
+
+
+            kalshi_data = get_kalshi_data(limit=5)
+            prompt = prompt + kalshi_data
 
             messages = [{"role": "user", "content": enriched_prompt}]
 
