@@ -164,6 +164,7 @@ This service went through a few iterations, and the current iteration is the sim
   - The second step is to parse the data from the website. This is done by leveraging the OpenAI API. 
     - The AI model is instructed to take the markdown text and extract the most important pieces of data that are relevant to the article.
     - The AI model is instructed to output the data in the form of a JSON object that matches the specific schema for the topic (ex: SportsArticleExtraction).
+  - We currently have output data for sports, entertainment, us news, and world news.
 
 3. **Loading Data into Pinecone**:
   - The crawlers use the jsonOutputParser utility to generate a pre-defined output file if it doesn't already exist. Otherwise, it will append fresh data to the existing file.
