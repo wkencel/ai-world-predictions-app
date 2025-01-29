@@ -8,14 +8,14 @@ from dotenv import load_dotenv
 from firecrawl import FirecrawlApp
 from langsmith.wrappers import wrap_openai
 
-from ..freshRSS.sportsLinks import extract_yahoo_sports_links
-from ..models.sportsModel import SportsArticleExtraction
+from ..freshRSS.worldNewsLinks import extract_world_news_links
+from ..models.worldNewsModel import WorldNewsArticleExtraction
 from ..utils.jsonOutputParser import save_json_pretty
 
 # Get fresh links from RSS feed
-sports_links = extract_yahoo_sports_links()
-print('sports_links: ', sports_links)
-print('total sports_links: ', len(sports_links))
+world_news_links = extract_world_news_links()
+print('world_news_links: ', world_news_links)
+print('total world_news_links: ', len(world_news_links))
 
 # Load environment variables from .env file
 load_dotenv()
@@ -38,8 +38,8 @@ app = FirecrawlApp()
 start_time_crawl = time.time()
 
 # careful with this, as scraping this many links could reach rate limits / cost $$
-# if len(sports_links) > 60:
-for link in sports_links[:2]: # adjust this to scrape more links
+# if len(world_news_links) > 60:
+for link in world_news_links[:2]: # adjust this to scrape more links
     crawled_data = app.crawl_url(
         url=link,
         params={
@@ -74,11 +74,11 @@ for link in sports_links[:2]: # adjust this to scrape more links
                 {"role": "system", "content": "You are an expert at structured data extraction. You will be given unstructured markdown text from a website that contains articles related to sports news. You must extract the most important pieces of data that are relevant to the article. The data should be in the form of a JSON object that matches the SportsArticleExtraction schema as indicated in your instructions."},
                 {"role": "user", "content": "Here is the markdown text for one article: " + item["markdown"][: (MAX_TOKEN)]}
             ],
-            response_format=SportsArticleExtraction,
+            response_format=WorldNewsArticleExtraction,
         )
 
-        sports_data_json = completion.choices[0].message.parsed
-        save_json_pretty(sports_data_json, "sports_data.json")
+        world_news_data_json = completion.choices[0].message.parsed
+        save_json_pretty(world_news_data_json, "world_news_data.json")
 
     # End timer for second loop and print duration
     end_time_process = time.time()
