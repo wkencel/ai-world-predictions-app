@@ -1,0 +1,232 @@
+[
+    {
+        "author": "Unknown",
+        "date": "Unknown",
+        "figures": [
+            {
+                "facts": [
+                    "Signed executive orders to ban foreign aid workers from offering information about abortion and federal funding for abortions.",
+                    "His administrations' policy changes could lead to significant impacts on state funding and social services.",
+                    "His funding freeze temporarily blocked by U.S. District Judge Loren L. AliKhan."
+                ],
+                "name": "Donald Trump",
+                "organization": "United States",
+                "position": "President"
+            },
+            {
+                "facts": [
+                    "Issued a ruling blocking Trump's federal funding freeze minutes before it was set to take effect."
+                ],
+                "name": "Loren L. AliKhan",
+                "organization": "U.S. District Court",
+                "position": "U.S. District Judge"
+            },
+            {
+                "facts": [
+                    "Confirmed that Medicaid payments were still being processed despite the portal outage."
+                ],
+                "name": "Karoline Leavitt",
+                "organization": "White House",
+                "position": "Secretary"
+            },
+            {
+                "facts": [
+                    "Along with state officials, reassessing state funding due to potential cuts from Trump's federal funding freeze.",
+                    "Supports Trump's order even amidst funding uncertainties."
+                ],
+                "name": "Jeff Landry",
+                "organization": "Louisiana",
+                "position": "Governor"
+            },
+            {
+                "facts": [
+                    "Cited chaos and confusion caused by Trump's executive order.",
+                    "Warned of potential losses to essential services like law enforcement and domestic violence shelters."
+                ],
+                "name": "Katie Hobbs",
+                "organization": "Arizona",
+                "position": "Governor"
+            },
+            {
+                "facts": [
+                    "Opposed Trump's funding freeze, considering it a violation of federal law."
+                ],
+                "name": "Karine Mayes",
+                "organization": "Arizona",
+                "position": "Attorney General"
+            },
+            {
+                "facts": [
+                    "Concerned about the impact of federal funding freeze on city infrastructure and services.",
+                    "Called Trump's move illegal and unconstitutional."
+                ],
+                "name": "Kate Gallego",
+                "organization": "Phoenix",
+                "position": "Mayor"
+            },
+            {
+                "facts": [
+                    "Highlighted the dependency of states on federal grants, which could be affected by Trump's order."
+                ],
+                "name": "Rebecca Thiess",
+                "organization": "Pew Charitable Trusts",
+                "position": "Manager"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "The Trump administration issued executive orders banning federal funding for abortions and abortion-related counseling by foreign NGOs.",
+                    "The federal funding freeze was temporarily blocked by a court ruling.",
+                    "States heavily reliant on federal funds, like Louisiana and Arizona, face potential economic impacts."
+                ],
+                "name": "United States",
+                "people": [
+                    {
+                        "facts": [
+                            "Signed executive orders to ban foreign aid workers from offering information about abortion and federal funding for abortions.",
+                            "His administrations' policy changes could lead to significant impacts on state funding and social services.",
+                            "His funding freeze temporarily blocked by U.S. District Judge Loren L. AliKhan."
+                        ],
+                        "name": "Donald Trump",
+                        "organization": "United States",
+                        "position": "President"
+                    },
+                    {
+                        "facts": [
+                            "Issued a ruling blocking Trump's federal funding freeze minutes before it was set to take effect."
+                        ],
+                        "name": "Loren L. AliKhan",
+                        "organization": "U.S. District Court",
+                        "position": "U.S. District Judge"
+                    },
+                    {
+                        "facts": [
+                            "Confirmed that Medicaid payments were still being processed despite the portal outage."
+                        ],
+                        "name": "Karoline Leavitt",
+                        "organization": "White House",
+                        "position": "Secretary"
+                    },
+                    {
+                        "facts": [
+                            "Along with state officials, reassessing state funding due to potential cuts from Trump's federal funding freeze.",
+                            "Supports Trump's order even amidst funding uncertainties."
+                        ],
+                        "name": "Jeff Landry",
+                        "organization": "Louisiana",
+                        "position": "Governor"
+                    },
+                    {
+                        "facts": [
+                            "Cited chaos and confusion caused by Trump's executive order.",
+                            "Warned of potential losses to essential services like law enforcement and domestic violence shelters."
+                        ],
+                        "name": "Katie Hobbs",
+                        "organization": "Arizona",
+                        "position": "Governor"
+                    },
+                    {
+                        "facts": [
+                            "Opposed Trump's funding freeze, considering it a violation of federal law."
+                        ],
+                        "name": "Karine Mayes",
+                        "organization": "Arizona",
+                        "position": "Attorney General"
+                    },
+                    {
+                        "facts": [
+                            "Concerned about the impact of federal funding freeze on city infrastructure and services.",
+                            "Called Trump's move illegal and unconstitutional."
+                        ],
+                        "name": "Kate Gallego",
+                        "organization": "Phoenix",
+                        "position": "Mayor"
+                    },
+                    {
+                        "facts": [
+                            "Highlighted the dependency of states on federal grants, which could be affected by Trump's order."
+                        ],
+                        "name": "Rebecca Thiess",
+                        "organization": "Pew Charitable Trusts",
+                        "position": "Manager"
+                    }
+                ]
+            }
+        ],
+        "quote": "“We urge [the federal Office of Management and Budget] to develop a responsible runway to untangle us from any unnecessary and egregious policies without jeopardizing the financial stability of the state.”",
+        "summary": "Following President Donald Trump's executive orders to ban federal funding for abortions and restrict foreign aid, states like Louisiana and Arizona face uncertainty as they assess potential cuts to federal funding. A legal challenge temporarily halted the federal funding freeze just before its implementation. Louisiana officials have begun realigning state funds to mitigate imminent shortfalls due to the freeze, while Arizona's leadership strongly opposed the move, citing potential significant impacts on state infrastructure, law enforcement, and social services. The orders include reinstating the \"global gag rule\" and a scrutiny of federal spending, aiming to ensure compliance with Trump's executive orders and fiscal policies. These moves have sparked considerable confusion and concern among state administrators and nonprofit organizations reliant on federal grants.",
+        "title": "Trump orders ban foreign aid, rescind federal funds guidance for abortion",
+        "url": "www.azcentral.com"
+    },
+    {
+        "author": "N/A",
+        "date": "January 28, 2025",
+        "figures": [
+            {
+                "facts": [
+                    "Initiated the federal funding freeze impacting state and local governments.",
+                    "Emphasized aligning with a conservative agenda through this action."
+                ],
+                "name": "Donald Trump",
+                "organization": "United States Government",
+                "position": "Former President"
+            },
+            {
+                "facts": [
+                    "Preparing for potential cuts to Louisiana's federal funding due to Trump's freeze."
+                ],
+                "name": "Jeff Landry",
+                "organization": "State of Louisiana",
+                "position": "Governor"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "Implemented a federal funding freeze aiming to better align with conservative policy objectives.",
+                    "The decision temporarily blocked by a legal challenge, creating uncertainty in various sectors."
+                ],
+                "name": "Trump Administration",
+                "people": [
+                    {
+                        "facts": [
+                            "Initiated the federal funding freeze impacting state and local governments.",
+                            "Emphasized aligning with a conservative agenda through this action."
+                        ],
+                        "name": "Donald Trump",
+                        "organization": "United States Government",
+                        "position": "Former President"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Facing potential cuts to federal funding amidst the Trump administration's funding freeze."
+                ],
+                "name": "State of Louisiana",
+                "people": [
+                    {
+                        "facts": [
+                            "Preparing for potential cuts to Louisiana's federal funding due to Trump's freeze."
+                        ],
+                        "name": "Jeff Landry",
+                        "organization": "State of Louisiana",
+                        "position": "Governor"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Affected by the Trump administration's halt on federal grants and loans."
+                ],
+                "name": "State of Connecticut",
+                "people": []
+            }
+        ],
+        "quote": "Trump’s funding freeze causes scramble in CT.",
+        "summary": "The article discusses the impact of former President Donald Trump's decision to freeze federal aid to align with a conservative agenda, leading to widespread concern across the United States. This decision has affected a wide range of sectors, including healthcare, education, and local governments. State and local leaders, including Connecticut and Louisiana, are grappling with budget constraints and potential cuts to essential services due to halted federal grants and loans. A legal challenge has temporarily blocked the freeze, adding to the uncertainty. Figures like Governor Jeff Landry are mentioned to be preparing for potential budget cuts. The situation has led to widespread anxiety among voters fearing for their basic services.",
+        "title": "Impact of Trump's Federal Funding Freeze on States",
+        "url": "N/A"
+    }
+]
