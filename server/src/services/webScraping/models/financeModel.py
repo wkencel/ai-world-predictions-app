@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 # Define the pydantic data structure for the data points
 # These are specific to yahoo finance news, but can be modified to fit other finance websites
 
-# Finance Data Schema (these models will be moved out to a models directory)
+# Finance Data Schema 
 class Figure(BaseModel):
     name: str = Field(..., description="The name of the person")
     organization: str = Field(..., description="The organization, company, part, institution, teamn, etc that the person is associated with")

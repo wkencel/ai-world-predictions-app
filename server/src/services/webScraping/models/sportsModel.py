@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 # Define the pydantic data structure for the data points
 # These are specific to The Sporting News, but can be modified to fit other sports websites
 
-# Sports Data Schema (these models will be moved out to a models directory)
+# Sports Data Schema 
 class Player(BaseModel):
     name: str = Field(..., description="The name of the player")
     team: str = Field(..., description="The team of the player")

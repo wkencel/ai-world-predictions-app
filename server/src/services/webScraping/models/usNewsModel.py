@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 # Define the pydantic data structure for the data points
 # These are specific to US News, but can be modified to fit other news websites
 
-# US News Data Schema (these models will be moved out to a models directory)
+# US News Data Schema
 class Figure(BaseModel):
     name: str = Field(..., description="The name of the person")
     organization: str = Field(..., description="The organization, company, part, institution, teamn, etc that the person is associated with")
