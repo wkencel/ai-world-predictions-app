@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BACKEND_PORT = process.env.PORT || 5000;
+const BACKEND_PORT = process.env.BACKEND_API_PORT || 5000;
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
 
 function App() {
