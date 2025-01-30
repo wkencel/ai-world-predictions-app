@@ -218,7 +218,6 @@ def query_pinecone(query_text):
         }
 
 def process_and_index_data(data_type="default"):
-def process_and_index_data(data_type="default"):
     """
     Read JSON data from file and index it in Pinecone
     Args:
