@@ -1,12 +1,15 @@
-# app.py
+import os
 import requests
 from flask import Flask, jsonify, request
+from dotenv import load_dotenv
 
 from services.polymarket import get_polymarket_market, get_polymarket_markets
 from services.kalshi import get_events, get_event, get_markets, get_market, get_trades
 from services.openai import generate_response
 from flask_cors import CORS
 import traceback
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -40,9 +43,7 @@ def predict():
 
         response = generate_response(prompt, mode=mode, timeframe=timeframe)
 
-        # Handle different response formats based on mode
         if mode == 'council':
-            # Return the full council response structure
             return jsonify({
                 "success": True,
                 "consensus": {
@@ -53,7 +54,6 @@ def predict():
                 "mode": "council"
             })
         else:
-            # Return simple prediction for fast/deep modes
             return jsonify({
                 "success": True,
                 "prediction_result": response
@@ -67,6 +67,7 @@ def predict():
             "error": str(e)
         }), 500
 
+# Kalshi API routes
 @app.route('/kalshi/events', methods=['GET'])
 def kalshi_events():
     try:
@@ -135,12 +136,12 @@ def kalshi_trades():
         ticker = request.args.get('ticker', None)
         min_ts = request.args.get('min_ts', None)
         max_ts = request.args.get('max_ts', None)
-
         trades = get_trades(cursor=cursor, limit=limit, ticker=ticker, min_ts=min_ts, max_ts=max_ts)
         return jsonify(trades)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Polymarket API routes
 @app.route('/polymarket/markets', methods=['GET'])
 def polymarket_markets():
     try:
@@ -160,4 +161,5 @@ def polymarket_market(condition_id):
         return jsonify({"error": "An unexpected error occurred.", "details": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.getenv("BACKEND_API_PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
