@@ -8,7 +8,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from db.pinecone.setup_pinecone import query_pinecone
-from services.kalshi import get_events
+from services.kalshi import get_events, get_markets
+# from services.kalshi import get_events, get_kalshi_data
 from utils.logger import color_logger
 
 # Determine the path to the root directory's .env file
@@ -28,14 +29,25 @@ DEEP_MODEL = 'gpt-4o'  # Deep thinking model
 FAST_MODEL = 'gpt-4o-mini'  # Quick response model
 COUNCIL_MODEL = 'gpt-4o'  # Model for expert council
 
+
+########################
+# ? Notes:
+
 # todo: pull in some RAG store data
 # todo: pull in some api data
 # todo: pull in some news data
 # todo: pull in web scraper data
 # todo: pull in some other data
 
+# ! FAST: we are going to use the 4o model to get a quick response with with API data
+# ! DEEP: we are going to pull in pinecone data and API data
+# ! COUNCIL: we are going to pull in pinecone data and API data and have a council of experts come up with a prediction
+
 # Architecture: user input -> prompt -> model  -> response
 # we also need some way of getting our prediction outcome into the model
+
+########################
+
 
 # Move AgentPerformanceTracker class to the top of the file, after imports
 class AgentPerformanceTracker:
@@ -244,7 +256,7 @@ for outcome in historical_outcomes:
     )
 
 @color_logger.log_service_call('openai')  # Use color_logger for the decorator
-def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', current_price=None):
+def generate_response(prompt, mode='fast', max_tokens=500, timeframe='short', current_price=None):
     """
     Updated generate_response function that includes RAG and market data
     """
@@ -255,15 +267,109 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
         color_logger.info("="*50)
         color_logger.info(f"🤖 Starting new prediction request - Mode: {mode}")
 
-        # Enrich prompt with context
-        enriched_prompt = enrich_prompt_with_context(prompt, current_price)
-        color_logger.info(f" Enriched Prompt: {enriched_prompt[:200]}...")
-
         if mode == 'fast':
-            color_logger.info("🚀 Initiating FAST mode with o1-mini model")
+            color_logger.info("🚀 Initiating FAST mode with 4o model")
             color_logger.info("📊 Optimizing for speed and conciseness...")
 
-            messages = [{"role": "user", "content": enriched_prompt}]
+            # Fetch and format Kalshi market data
+            try:
+                # 1. Get market data with better error handling
+                try:
+                    # Get active markets with minimum volume
+                    kalshi_markets = get_markets(
+                        limit=25,
+                        status="active",
+                        min_volume=1000,  # Only show markets with significant volume
+                        # Remove series_ticker filter to get all NFL markets
+                    )
+
+                    # Sort markets by volume to show most active first
+                    markets = sorted(
+                        kalshi_markets.get('markets', []),
+                        key=lambda x: x.get('volume', 0),
+                        reverse=True
+                    )
+
+                    # Filter for NFL markets in Python instead of API
+                    nfl_markets = [
+                        market for market in markets
+                        if 'NFL' in market.get('ticker', '') or 'SB' in market.get('ticker', '')
+                    ]
+
+                    if not nfl_markets:
+                        raise ValueError("No NFL market data received")
+
+                    # Create detailed market analysis
+                    market_context = "\n\n📊 AVAILABLE BETTING MARKETS:\n"
+                    for market in nfl_markets:
+                        market_context += f"""
+                        • {market.get('title', 'Unknown')} ({market.get('ticker', 'N/A')})
+                        Current Prices: YES ${market.get('yes_price', 'N/A')} | NO ${market.get('no_price', 'N/A')}
+                        Volume: ${market.get('volume', 0):,}
+                        ROI: YES {market.get('yes_roi', 0):.1f}% | NO {market.get('no_roi', 0):.1f}%
+                        """
+                except Exception as e:
+                    color_logger.warning(f"Market data fetch failed: {str(e)}")
+                    market_context = "⚠️ Live market data temporarily unavailable"
+
+                # Create an enhanced prompt with ROI focus
+                fast_prompt = f"""ANALYZE ROI AND PROVIDE A SPECIFIC BET RECOMMENDATION:
+
+
+                Given the date and time is: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+                and the current market data is:
+                {market_context}
+
+                USER QUERY:
+                {prompt}
+
+                CALCULATE POTENTIAL RETURNS:
+                1. If YES wins: (100 - Yes Price) / Yes Price = ROI%
+                2. If NO wins: (100 - No Price) / No Price = ROI%
+
+                YOU MUST RESPOND IN THIS EXACT FORMAT:
+                🎯 RECOMMENDED BET:
+                [Market Ticker] - [Market Title]
+                Team/Selection: [SPECIFIC TEAM/OUTCOME]
+                Position: [YES/NO]
+                Entry Price: $[Current Price]
+                Potential ROI: [X]%
+                Size: [SMALL/MEDIUM/LARGE] (based on ROI and confidence)
+                Confidence: [X]%
+
+                💰 WHY THIS BET (3 bullet points):
+                • [ROI calculation with exact numbers]
+                • [Specific market inefficiency with data]
+                • [Concrete supporting data point with numbers]
+
+                ⚠️ RISK/REWARD:
+                • Risk: [Specific downside scenario]
+                • Max Loss: $[Entry Price]
+                • Max Gain: $[Exact dollar amount]
+                • Win Probability: [X]%
+
+                DO NOT PROVIDE ANY OTHER COMMENTARY.
+                PICK THE SINGLE BEST BET WITH THE HIGHEST RISK-ADJUSTED ROI."""
+
+                color_logger.info("✨ Enhanced prompt with live market data and ROI calculations")
+
+            except Exception as e:
+                color_logger.warning(f"Could not fetch Kalshi data: {str(e)}")
+                fast_prompt = prompt
+
+            messages = [
+                {
+                    "role": "system",
+                    "content": """You are a ruthless ROI-focused prediction market expert.
+                    ALWAYS calculate potential returns before recommending.
+                    ONLY recommend bets with clear positive expected value.
+                    NEVER hedge or provide multiple options.
+                    ALWAYS follow the exact response template.
+                    Focus on finding market inefficiencies."""
+                },
+                {"role": "user", "content": fast_prompt}
+            ]
 
             response = client.chat.completions.create(
                 model=FAST_MODEL,
@@ -278,34 +384,151 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             color_logger.info(f"📊 Response: {result[:100]}...")
             return result
 
+
+
+
+
+
+
+
+
+
         elif mode == 'deep':
-            color_logger.info("🧠 Initiating DEEP mode with o1 model")
-            color_logger.info(" Beginning thorough analysis process...")
 
-            # Simulate deep thinking with progress updates
-            for i in range(20):
-                time.sleep(1)
-                if i % 4 == 0:  # Log every 4 seconds
-                    color_logger.info(f"🤔 Deep thinking in progress... {i*5}% complete")
-                    color_logger.info("💭 Analyzing market patterns and correlations...")
-                    color_logger.info("📈 Processing technical indicators...")
-                    color_logger.info("🌍 Evaluating global market conditions...")
+            color_logger.info("🚀 Initiating FAST mode with 4o model")
+            color_logger.info("📊 Optimizing for speed and conciseness...")
 
-            messages = [{"role": "user", "content": enriched_prompt}]
+            # Fetch and format Kalshi market data
+            try:
+                # 1. Get market data with better error handling
+                try:
+                    # Get active markets with minimum volume
+                    kalshi_markets = get_markets(
+                        limit=25,
+                        status="active",
+                        min_volume=1000,  # Only show markets with significant volume
+                        # Remove series_ticker filter to get all NFL markets
+                    )
 
-            color_logger.info("🎯 Finalizing deep analysis...")
+                    # Sort markets by volume to show most active first
+                    markets = sorted(
+                        kalshi_markets.get('markets', []),
+                        key=lambda x: x.get('volume', 0),
+                        reverse=True
+                    )
+
+                    # Filter for NFL markets in Python instead of API
+                    nfl_markets = [
+                        market for market in markets
+                        if 'NFL' in market.get('ticker', '') or 'SB' in market.get('ticker', '')
+                    ]
+
+                    if not nfl_markets:
+                        raise ValueError("No NFL market data received")
+
+                    # Create detailed market analysis
+                    market_context = "\n\n📊 AVAILABLE BETTING MARKETS:\n"
+                    for market in nfl_markets:
+                        market_context += f"""
+                        • {market.get('title', 'Unknown')} ({market.get('ticker', 'N/A')})
+                        Current Prices: YES ${market.get('yes_price', 'N/A')} | NO ${market.get('no_price', 'N/A')}
+                        Volume: ${market.get('volume', 0):,}
+                        ROI: YES {market.get('yes_roi', 0):.1f}% | NO {market.get('no_roi', 0):.1f}%
+                        """
+                except Exception as e:
+                    color_logger.warning(f"Market data fetch failed: {str(e)}")
+                    market_context = "⚠️ Live market data temporarily unavailable"
+
+                # Get relevant context from Pinecone
+                try:
+                    rag_results = query_pinecone(prompt)
+                    historical_context = "\n".join([match['metadata']['text'] for match in rag_results['matches']])
+                    color_logger.info(f"RAG Context: {historical_context[:100]}...")
+                except Exception as e:
+                    color_logger.warning(f"Failed to get RAG context: {str(e)}")
+                    historical_context = "No historical context available"
+
+                # Create an enhanced prompt with ROI focus
+                fast_prompt = f"""ANALYZE ROI AND PROVIDE A SPECIFIC BET RECOMMENDATION:
+
+
+                Given the date and time is: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+                and the current market data is:
+                {market_context}
+
+                HISTORICAL CONTEXT:
+                {historical_context}
+
+                USER QUERY:
+                {prompt}
+
+                CALCULATE POTENTIAL RETURNS:
+                1. If YES wins: (100 - Yes Price) / Yes Price = ROI%
+                2. If NO wins: (100 - No Price) / No Price = ROI%
+
+                YOU MUST RESPOND IN THIS EXACT FORMAT:
+                🎯 RECOMMENDED BET:
+                [Market Ticker] - [Market Title]
+                Team/Selection: [SPECIFIC TEAM/OUTCOME]
+                Position: [YES/NO]
+                Entry Price: $[Current Price]
+                Potential ROI: [X]%
+                Size: [SMALL/MEDIUM/LARGE] (based on ROI and confidence)
+                Confidence: [X]%
+
+                💰 WHY THIS BET (3 bullet points):
+                • [ROI calculation with exact numbers]
+                • [Specific market inefficiency with data]
+                • [Concrete supporting data point with numbers]
+
+                ⚠️ RISK/REWARD:
+                • Risk: [Specific downside scenario]
+                • Max Loss: $[Entry Price]
+                • Max Gain: $[Exact dollar amount]
+                • Win Probability: [X]%
+
+                DO NOT PROVIDE ANY OTHER COMMENTARY.
+                PICK THE SINGLE BEST BET WITH THE HIGHEST RISK-ADJUSTED ROI.
+
+                HISTORICAL CONTEXT:
+                {historical_context[:500]}
+
+                """
+
+                color_logger.info("✨ Enhanced prompt with live market data and ROI calculations")
+
+            except Exception as e:
+                color_logger.warning(f"Could not fetch Kalshi data: {str(e)}")
+                fast_prompt = prompt
+
+            messages = [
+                {
+                    "role": "system",
+                    "content": """You are a ruthless ROI-focused prediction market expert.
+                    ALWAYS calculate potential returns before recommending.
+                    ONLY recommend bets with clear positive expected value.
+                    NEVER hedge or provide multiple options.
+                    ALWAYS follow the exact response template.
+                    Focus on finding market inefficiencies."""
+                },
+                {"role": "user", "content": fast_prompt}
+            ]
+
             response = client.chat.completions.create(
-                model=DEEP_MODEL,
+                model=FAST_MODEL,
                 messages=messages,
                 max_tokens=max_tokens,
                 n=1,
-                temperature=0.7,
+                temperature=0.5,
             )
             result = response.choices[0].message.content.strip()
 
-            color_logger.info("✅ Deep analysis complete!")
+            color_logger.info("✨ Fast analysis complete!")
             color_logger.info(f"📊 Response: {result[:100]}...")
             return result
+
+
 
         elif mode == 'council':
             color_logger.info("👥 Initiating COUNCIL mode with expert panel")
@@ -354,18 +577,18 @@ def generate_response(prompt, mode='fast', max_tokens=150, timeframe='short', cu
             color_logger.info("🤝 Moderator is reviewing all expert opinions...")
 
             consensus_prompt = f"""As the council moderator, analyze these expert opinions and provide a final consensus.
-Return ONLY a JSON object with no markdown formatting or additional text:
+                Return ONLY a JSON object with no markdown formatting or additional text:
 
-{{
-    "final_prediction": "clear prediction",
-    "confidence_level": 75,
-    "profit_strategy": "detailed strategy",
-    "risk_assessment": "key risks",
-    "sentiment_score": 75
-}}
+                {{
+                    "final_prediction": "clear prediction",
+                    "confidence_level": 75,
+                    "profit_strategy": "detailed strategy",
+                    "risk_assessment": "key risks",
+                    "sentiment_score": 75
+                }}
 
-Expert Opinions:
-{json.dumps(discussion, indent=2)}"""
+                Expert Opinions:
+                {json.dumps(discussion, indent=2)}"""
 
             try:
                 color_logger.info("🧠 Moderator is synthesizing expert opinions...")
