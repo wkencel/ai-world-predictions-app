@@ -492,7 +492,7 @@ def generate_response(prompt, mode='fast', max_tokens=500, timeframe='short', cu
                 PICK THE SINGLE BEST BET WITH THE HIGHEST RISK-ADJUSTED ROI.
 
                 HISTORICAL CONTEXT:
-                {historical_context[:1000]}
+                {historical_context[:500]}
 
                 """
 
