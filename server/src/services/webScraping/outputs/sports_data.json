@@ -298,5 +298,150 @@
         ],
         "title": "Three Trade Targets For The Colorado Avalanche",
         "url": "https://www.thn.com"
+    },
+    {
+        "author": "Unknown",
+        "date": "January 29, 2025",
+        "players": [
+            {
+                "injuryStatus": "",
+                "name": "De'Aaron Fox",
+                "position": "Point Guard",
+                "stats": [
+                    "25.2 points per game",
+                    "6.2 assists per game",
+                    "5 rebounds per game"
+                ],
+                "team": "Sacramento Kings"
+            },
+            {
+                "injuryStatus": "",
+                "name": "Victor Wembanyama",
+                "position": "Center",
+                "stats": [],
+                "team": "San Antonio Spurs"
+            },
+            {
+                "injuryStatus": "",
+                "name": "Chris Paul",
+                "position": "Point Guard",
+                "stats": [],
+                "team": "San Antonio Spurs"
+            }
+        ],
+        "quote": "Fox reportedly has a 'preferred destination.' Rumors that Fox wants to end up in San Antonio and be paired with Victor Wembanyama have been swirling around the league for more than a year.",
+        "summary": "The Sacramento Kings are reportedly open to trading their star point guard De'Aaron Fox before the February 6 NBA trade deadline. Fox's agent, Rich Paul, has suggested that it would be wise for the Kings to move him soon. Fox is rumored to prefer a trade to the San Antonio Spurs, where he can team up with Victor Wembanyama. Despite Sacramento's recent 11-4 record under interim coach Doug Christie, concerns about the team's defensive weaknesses remain. Several teams, including the Heat, Clippers, Nets, Rockets, and Magic, have shown interest in Fox. The Kings find themselves at a crossroads, as Fox has a significant contract and would require a substantial trade offer. The Lakers are not on Fox's list of preferred destinations.",
+        "teams": [
+            {
+                "name": "Sacramento Kings",
+                "people": [
+                    {
+                        "injuryStatus": "",
+                        "name": "De'Aaron Fox",
+                        "position": "Point Guard",
+                        "stats": [
+                            "25.2 points per game",
+                            "6.2 assists per game",
+                            "5 rebounds per game"
+                        ],
+                        "team": "Sacramento Kings"
+                    }
+                ],
+                "stats": []
+            },
+            {
+                "name": "San Antonio Spurs",
+                "people": [
+                    {
+                        "injuryStatus": "",
+                        "name": "Victor Wembanyama",
+                        "position": "Center",
+                        "stats": [],
+                        "team": "San Antonio Spurs"
+                    },
+                    {
+                        "injuryStatus": "",
+                        "name": "Chris Paul",
+                        "position": "Point Guard",
+                        "stats": [],
+                        "team": "San Antonio Spurs"
+                    }
+                ],
+                "stats": []
+            },
+            {
+                "name": "Miami Heat",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Los Angeles Clippers",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Brooklyn Nets",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Houston Rockets",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Orlando Magic",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Los Angeles Lakers",
+                "people": [],
+                "stats": []
+            }
+        ],
+        "title": "Kings reportedly open to De'Aaron Fox trade offers before deadline; Fox is rumored to prefer Spurs",
+        "url": ""
+    },
+    {
+        "author": "Dan Wetzel, Ross Dellenger, Pat Forde",
+        "date": "",
+        "players": [
+            {
+                "injuryStatus": "",
+                "name": "Connor Stallions",
+                "position": "",
+                "stats": [],
+                "team": "University of Michigan"
+            },
+            {
+                "injuryStatus": "",
+                "name": "Bret Bielema",
+                "position": "Coach",
+                "stats": [],
+                "team": "Illinois"
+            }
+        ],
+        "quote": "They discuss the details of Connor Stallions' operation and what potential punishments are coming their way once the process concludes.",
+        "summary": "This episode of The College Football Enquirer podcast covers the University of Michigan's detailed response to the NCAA regarding their sign-stealing investigation. The podcast hosts discuss the intricacies of Connor Stallions' operation and potential repercussions Michigan may face. Illinois coach Bret Bielema's views are also explored. The broader implications for Ohio State and the importance of Jim Knowles's role are also touched upon in the same episode.",
+        "teams": [
+            {
+                "name": "University of Michigan",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Ohio State Buckeyes",
+                "people": [],
+                "stats": []
+            },
+            {
+                "name": "Illinois",
+                "people": [],
+                "stats": []
+            }
+        ],
+        "title": "Deep dive into Michigan's response to their sign stealing investigation | College Football Enquirer",
+        "url": ""
     }
 ]
