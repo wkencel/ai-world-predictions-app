@@ -92,23 +92,25 @@ def kalshi_event(event_ticker):
 @app.route('/kalshi/markets', methods=['GET'])
 def kalshi_markets():
     try:
-        # Use the mock data from get_events
-        events_data = get_events(limit=10)
+        # Get the raw markets data
+        markets_data = get_markets(limit=100)
 
-        # Transform the events data into a format suitable for the frontend
-        markets = []
-        for event in events_data.get('events', []):
-            for market in event.get('markets', []):
-                markets.append({
-                    'ticker': market['ticker'],
-                    'title': event['title'],
-                    'status': event['status'],
-                    'odds': market.get('odds'),
-                    'volume': market.get('volume'),
-                    'description': f"Event: {event['title']} - Market: {market['ticker']}"
-                })
+        # Return the raw response without transformation
+        return jsonify(markets_data)
 
-        return jsonify(markets)
+        # # If you want to keep the transformation, use this instead:
+        # markets = []
+        # for event in events_data.get('events', []):
+        #     for market in event.get('markets', []):
+        #         markets.append({
+        #             'ticker': market['ticker'],
+        #             'title': event['title'],
+        #             'status': event['status'],
+        #             'odds': market.get('odds'),
+        #             'volume': market.get('volume'),
+        #             'description': f"Event: {event['title']} - Market: {market['ticker']}"
+        #         })
+
     except Exception as e:
         print(f"Error in /kalshi/markets: {str(e)}")
         print(traceback.format_exc())  # Print the full stack trace
