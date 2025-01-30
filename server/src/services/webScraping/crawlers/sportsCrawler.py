@@ -41,7 +41,7 @@ start_time_crawl = time.time()
 
 # careful with this, as scraping this many links could reach rate limits / cost $$
 # if len(sports_links) > 60:
-for link in sports_links[:2]: # adjust this to scrape more links
+for link in sports_links[:3]: # adjust this to scrape more links
     crawled_data = app.crawl_url(
         url=link,
         params={
