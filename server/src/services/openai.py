@@ -544,6 +544,8 @@ def generate_response(prompt, mode='fast', max_tokens=500, timeframe='short', cu
 
             # Phase 1: Individual Expert Analysis
             color_logger.info("\n📣 Starting Phase 1: Individual Expert Analysis")
+            enriched_prompt = enrich_prompt_with_context(prompt,
+                                                         market_data={})  # Pass an empty dict or actual market data
             for expert in experts:
                 color_logger.expert(expert['role'], f"Starting analysis (Bias: {expert['bias']}, Style: {expert['style']})")
 
