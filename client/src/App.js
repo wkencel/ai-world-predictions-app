@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BACKEND_PORT = process.env.BACKEND_API_PORT || 5000;
+const BACKEND_PORT = process.env.REACT_APP_BACKEND_API_PORT || 5000;
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`;
 
 function App() {
@@ -54,7 +54,7 @@ function App() {
     for (const mode of modes) {
       setLoading(prev => ({ ...prev, [mode]: true }));
       try {
-        const response = await axios.post('http://localhost:5000/predict', {
+        const response = await axios.post(`${BACKEND_URL}/predict`, {
           prompt: prompt,
           mode: mode,
           timeframe: 'short'
