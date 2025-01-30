@@ -166,14 +166,14 @@ try:
     color_logger.info(json.dumps({
         'component': 'model_setup',
         'status': 'success',
-        'model': 'text-embedding-3-small',
+        'model': 'text-embedding-ada-002',
         'timestamp': datetime.now().isoformat()
     }))
 except Exception as e:
     color_logger.error(json.dumps({
         'component': 'model_setup',
         'status': 'error',
-        'model': 'text-embedding-3-small',
+        'model': 'text-embedding-ada-002',
         'error': str(e),
         'timestamp': datetime.now().isoformat()
     }))
