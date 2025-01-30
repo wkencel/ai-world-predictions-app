@@ -1,0 +1,136 @@
+[
+    {
+        "author": "",
+        "date": "",
+        "figures": [
+            {
+                "facts": [
+                    "Announced the refurbishment project for the Louvre.",
+                    "Emphasized that the renovation would not burden taxpayers.",
+                    "Plans to finance the renovation through the museum's own resources, increased entrance fees, and other incomes."
+                ],
+                "name": "Emmanuel Macron",
+                "organization": "",
+                "position": "French President"
+            },
+            {
+                "facts": [
+                    "Expressed concerns over overcrowding and physical strain on the museum's infrastructure.",
+                    "Noted water leaks and temperature swings jeopardizing art conservation.",
+                    "Participated in discussions leading to the renovation announcement."
+                ],
+                "name": "Laurence des Cars",
+                "organization": "Louvre Museum",
+                "position": "Director"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "World's most visited museum with around 8.7 million visitors in the previous year.",
+                    "Current infrastructure facing deterioration and strain from high visitation numbers.",
+                    "Plans include a new entrance to alleviate overcrowding and renovations costing €700 to €800 million.",
+                    "Estimated 80% of visitors come primarily to see the Mona Lisa."
+                ],
+                "name": "Louvre Museum",
+                "people": [
+                    {
+                        "facts": [],
+                        "name": "Laurence des Cars",
+                        "organization": "Louvre Museum",
+                        "position": "Director"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Partnership with Louvre Museum to secure revenue through licensing and brand usage."
+                ],
+                "name": "Louvre Abu Dhabi",
+                "people": []
+            }
+        ],
+        "quote": "“Every day, this very room is the scene of intense agitation,” Louvre Director Laurence des Cars said Tuesday.",
+        "summary": "The Louvre Museum in Paris is set to undergo extensive renovations, focusing on managing overcrowding and preserving artworks. French President Emmanuel Macron announced that the Mona Lisa will be moved to a dedicated gallery as part of the renovation, aiming to alleviate the overcrowding from over 8 million annual visitors. A new entrance will also be constructed to streamline visitor flow. The project, estimated to cost between €700 to €800 million, will be largely self-financed through increased ticket fees for non-EU citizens, donations, and partnerships like the Louvre Abu Dhabi. This move highlights a larger strategy to maintain and enhance cultural heritage while managing modern challenges within the famed museum.",
+        "title": "Mona Lisa to get a room of her own in Louvre museum renovation",
+        "url": ""
+    },
+    {
+        "author": "Unknown",
+        "date": "October 2023",
+        "figures": [
+            {
+                "facts": [
+                    "Sentenced to life imprisonment without the possibility of parole for 20 years for the murder of Ripudaman Singh Malik.",
+                    "Pleaded guilty to second-degree murder.",
+                    "Admitted to being financially compensated for the murder."
+                ],
+                "name": "Tanner Fox",
+                "organization": "",
+                "position": "Hitman"
+            },
+            {
+                "facts": [
+                    "Pleaded guilty to second-degree murder of Ripudaman Singh Malik.",
+                    "Due back in court for sentencing."
+                ],
+                "name": "Jose Lopez",
+                "organization": "",
+                "position": "Accomplice"
+            },
+            {
+                "facts": [
+                    "Acquitted in 2005 of mass murder charges related to the 1985 Air India bombings.",
+                    "Described as committed to education and community leadership."
+                ],
+                "name": "Ripudaman Singh Malik",
+                "organization": "Khalsa Credit Union and Khalsa School",
+                "position": "Businessman"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "Tanner Fox and Jose Lopez were tried and sentenced for the murder of Ripudaman Singh Malik.",
+                    "B.C. Supreme Court Justice Terence Schultes delivered the sentence."
+                ],
+                "name": "British Columbia Supreme Court",
+                "people": []
+            },
+            {
+                "facts": [],
+                "name": "Khalsa Credit Union",
+                "people": [
+                    {
+                        "facts": [
+                            "Involved in leadership roles within the organization."
+                        ],
+                        "name": "Ripudaman Singh Malik",
+                        "organization": "Khalsa Credit Union and Khalsa School",
+                        "position": "Leader"
+                    },
+                    {
+                        "facts": [
+                            "Urged Fox and Lopez to reveal who hired them.",
+                            "Criticized media for focusing on his father's past legal acquittal over his contributions to education."
+                        ],
+                        "name": "Jaspreet Singh Malik",
+                        "organization": "Khalsa Credit Union and Khalsa School",
+                        "position": "Son of Ripudaman Singh Malik"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Victim of the 1985 bombing, Canada's deadliest terrorist attack, resulting in 329 deaths."
+                ],
+                "name": "Air India",
+                "people": []
+            }
+        ],
+        "quote": "\"We plead with you to reveal the names of the people who hired you.\" — Malik's daughter-in-law, Sundeep Kaur Dhaliwal.",
+        "summary": "Tanner Fox was sentenced to life in prison without parole for 20 years by the British Columbia Supreme Court for the murder of Sikh businessman Ripudaman Singh Malik, who was shot dead outside his business in Surrey in July 2022. Fox and accomplice Jose Lopez had pleaded guilty to second-degree murder, admitting they were paid to kill Malik. The killing occurred years after Malik was acquitted of charges related to the 1985 Air India bombings. Malik’s family continues to seek answers on who hired Fox and Lopez for the murder, expressing fear for their safety. The murder reflects ongoing aftermath issues from the historic Air India tragedy.",
+        "title": "Hitman sentenced to life in prison for B.C. murder of former Air India bombing suspect",
+        "url": "Not provided"
+    }
+]

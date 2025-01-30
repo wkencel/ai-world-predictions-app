@@ -1,6 +1,5 @@
 import openai
 import instructor
-import json
 import time  # Add this import at the top with your other imports
 from firecrawl import FirecrawlApp
 from typing import List, Optional, Dict, Any, Type, Union
@@ -8,7 +7,6 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from firecrawl import FirecrawlApp
 from langsmith.wrappers import wrap_openai
-import os
 
 from ..freshRSS.usNewsLinks import extract_us_news_links
 from ..models.usNewsModel import UsNewsArticleExtraction

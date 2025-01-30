@@ -1,0 +1,179 @@
+[
+    {
+        "author": "Not explicitly mentioned",
+        "date": "January 21, 2024",
+        "figures": [
+            {
+                "facts": [
+                    "Claimed astronauts were left 'stranded' by the Biden administration.",
+                    "Stated SpaceX would bring astronauts home."
+                ],
+                "name": "Elon Musk",
+                "organization": "SpaceX",
+                "position": "CEO"
+            },
+            {
+                "facts": [
+                    "Involved in the Crew-9 mission.",
+                    "Conducted spacewalks during stay on ISS."
+                ],
+                "name": "Suni Williams",
+                "organization": "NASA",
+                "position": "Astronaut"
+            },
+            {
+                "facts": [
+                    "Involved in the Crew-9 mission.",
+                    "Experienced issues with Boeing's Starliner."
+                ],
+                "name": "Butch Wilmore",
+                "organization": "NASA",
+                "position": "Astronaut"
+            },
+            {
+                "facts": [
+                    "Emphasized astronaut safety for return missions.",
+                    "Was part of the unanimous decision to use SpaceX instead of Starliner."
+                ],
+                "name": "Bill Nelson",
+                "organization": "NASA",
+                "position": "Administrator"
+            },
+            {
+                "facts": [
+                    "Assured that astronauts were never stranded.",
+                    "Explained the return options available."
+                ],
+                "name": "Steve Stich",
+                "organization": "NASA",
+                "position": "Commercial Crew Program Manager"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "Contracted by NASA to return astronauts from ISS as part of Crew-9 mission."
+                ],
+                "name": "SpaceX",
+                "people": [
+                    {
+                        "facts": [
+                            "Claimed astronauts were left 'stranded' by the Biden administration."
+                        ],
+                        "name": "Elon Musk",
+                        "organization": "SpaceX",
+                        "position": "CEO"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Initiated plan months ago for SpaceX to return astronauts.",
+                    "Decided against using Boeing's Starliner for return due to safety concerns."
+                ],
+                "name": "NASA",
+                "people": [
+                    {
+                        "facts": [
+                            "Involved in spacewalks and extended mission stay due to Starliner issues."
+                        ],
+                        "name": "Suni Williams",
+                        "organization": "NASA",
+                        "position": "Astronaut"
+                    },
+                    {
+                        "facts": [
+                            "Was on Boeing's Starliner mission and part of Crew-9 plans."
+                        ],
+                        "name": "Butch Wilmore",
+                        "organization": "NASA",
+                        "position": "Astronaut"
+                    },
+                    {
+                        "facts": [
+                            "Promoted astronaut safety in deciding against Starliner return."
+                        ],
+                        "name": "Bill Nelson",
+                        "organization": "NASA",
+                        "position": "Administrator"
+                    },
+                    {
+                        "facts": [
+                            "Managed the logistics and safety of the Crew-9 mission."
+                        ],
+                        "name": "Steve Stich",
+                        "organization": "NASA",
+                        "position": "Commercial Crew Program Manager"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Developed the Starliner spacecraft, which had technical issues.",
+                    "Initial vehicle for Williams and Wilmore's transport to ISS."
+                ],
+                "name": "Boeing",
+                "people": []
+            }
+        ],
+        "quote": "“In my view, they’re never stuck or stranded. They always had a way to depart the space station.” - Steve Stich, NASA Commercial Crew Program Manager",
+        "summary": "Elon Musk, CEO of SpaceX, made claims on social media that two astronauts were left 'stranded' on the International Space Station by the Biden administration, and indicated that SpaceX would bring them home. However, NASA had already initiated plans months earlier for SpaceX to return astronauts Suni Williams and Butch Wilmore as part of its Crew-9 mission due to concerns with Boeing's Starliner spacecraft, which experienced technical failures. The situation was portrayed as if the astronauts were stranded, but NASA clarified they were never without an option to return as they were always included in routine rotation plans. The decision to use SpaceX was partly due to safety concerns informed by past experiences with space shuttle disasters. Despite the social media controversy, NASA confirmed that both the astronauts and SpaceX were aligned on the mission timeline and Crew-9 would bring them back safely.",
+        "title": "Elon Musk says SpaceX will bring home astronauts that he claims were left ‘stranded’— but NASA announced that plan months ago",
+        "url": "URL not provided"
+    },
+    {
+        "author": "Darrell Proctor",
+        "date": "2024-01-27",
+        "figures": [
+            {
+                "facts": [],
+                "name": "Daniel Jasper",
+                "organization": "Project Drawdown",
+                "position": "Senior Policy Advisor"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "Reported a 45% increase in solar and an 18% increase in wind power generation capacity in 2024."
+                ],
+                "name": "China's National Energy Administration",
+                "people": []
+            },
+            {
+                "facts": [],
+                "name": "Project Drawdown",
+                "people": [
+                    {
+                        "facts": [
+                            "Advocates for climate solutions and commented on China's renewable energy efforts."
+                        ],
+                        "name": "Daniel Jasper",
+                        "organization": "Project Drawdown",
+                        "position": "Senior Policy Advisor"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Reported that half of China's 2024 overseas power projects were renewable energy, including solar and hydro."
+                ],
+                "name": "Wood Mackenzie",
+                "people": [
+                    {
+                        "facts": [
+                            "Commented on Chinese priority in deploying greener technology overseas under the Belt & Road Initiative."
+                        ],
+                        "name": "Alex Whitworth",
+                        "organization": "Wood Mackenzie",
+                        "position": "Vice President, Head of Asia Pacific Power and Renewables Research"
+                    }
+                ]
+            }
+        ],
+        "quote": "“While China’s overall emissions are the largest of any single country, they have recognized – at least, in part – that rapidly building renewables is essential for energy and climate security,” said Daniel Jasper, senior policy advisor at Project Drawdown.",
+        "summary": "In 2024, China installed a record 357 gigawatts of wind and solar power, significantly surpassing previous annual additions and meeting a 2030 renewable energy target six years early. Despite this growth, coal-fired power remains a dominant part of China's energy mix, as the country's total power generation from coal, oil, natural gas, and nuclear power reached 6.34 trillion kilowatt-hours. While China's emissions are the largest globally, their renewable energy expansion positions them to lead in global climate initiatives. Despite challenges in achieving net-zero targets, China continues to export significant amounts of renewable technology under the Belt and Road Initiative, deploying 24 gigawatts of capacity overseas in 2024 alone.",
+        "title": "China built out record amount of wind and solar power in 2024",
+        "url": ""
+    }
+]
