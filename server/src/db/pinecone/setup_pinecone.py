@@ -22,8 +22,7 @@ load_dotenv(env_path)
 # Initialize variables
 pc = None
 index = None
-index_name = "ai-world-predictions-2"
-index_name = "ai-world-predictions-2"
+index_name = "ai-world-predictions-pinecone"
 
 @color_logger.log_service_call('pinecone')
 def query_pinecone(query_text: str, filter_params: Dict = None):
@@ -118,7 +117,7 @@ def text_to_vector(text):
     """Convert text to vector using OpenAI embeddings"""
     try:
         response = openai_client.embeddings.create(
-            model="text-embedding-3-small",
+            model="text-embedding-ada-002",
             input=text,
             encoding_format="float"
         )
