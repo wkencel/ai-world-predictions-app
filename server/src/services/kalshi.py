@@ -19,7 +19,8 @@ load_dotenv(dotenv_path=dotenv_path)
 # KALSHI_API_PRIVATE_KEY = os.getenv("KALSHI_API_PRIVATE_KEY")
 
 # For testing, use mock data if API keys aren't available
-KALSHI_API_URL = os.getenv("KALSHI_API_URL", "https://trading-api.kalshi.com")
+KALSHI_API_URL = os.getenv("KALSHI_API_URL", "https://api.elections.kalshi.com")
+logging.info(f"Kalshi API URL being used: {KALSHI_API_URL}")
 KALSHI_API_KEY_ID = os.getenv("KALSHI_API_KEY_ID", "mock_key_for_testing")
 KALSHI_API_PRIVATE_KEY = os.getenv("KALSHI_API_PRIVATE_KEY", "mock_private_key_for_testing")
 
@@ -90,6 +91,20 @@ def get_headers(method: str, path: str) -> dict:
     }
 
 
+# Set up logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+
+# Add this debug decorator to your request method
+def log_request(func):
+    def wrapper(*args, **kwargs):
+        logger.debug(f"Making request to Kalshi API: {KALSHI_API_URL}")
+        return func(*args, **kwargs)
+    return wrapper
+
+
+# Add the decorator to your request method
+@log_request
 def make_request(method: str, path: str, params=None):
     """
     Makes a signed request to the Kalshi API.
@@ -104,84 +119,104 @@ def make_request(method: str, path: str, params=None):
     """
     rate_limit()
     url = f"{KALSHI_API_URL}{path}"
-    headers = get_headers(method, path)
-    response = requests.get(url, headers=headers, params=params) if method == "GET" else requests.post(url,
-                                                                                                       headers=headers,
-                                                                                                       json=params)
-    response.raise_for_status()
-    return response.json()
+    print(f"DEBUG - KALSHI_API_URL: {KALSHI_API_URL}")  # Debug line
+    print(f"DEBUG - Making request to: {url}")  # Debug line
 
-
-def get_events(limit=100, cursor=None, status=None, series_ticker=None, with_nested_markets=False):
-    """Mock implementation for testing"""
-    return {
-        "events": [
-            {
-                "ticker": "NBA_GSW_LAL_20240320",
-                "title": "Warriors vs Lakers",
-                "status": "active",
-                "markets": [
-                    {
-                        "ticker": "GSW_WIN",
-                        "odds": 1.85,
-                        "volume": 150000,
-                        "description": "Golden State Warriors to win"
-                    }
-                ]
-            },
-            {
-                "ticker": "NBA_BOS_MIA_20240320",
-                "title": "Celtics vs Heat",
-                "status": "active",
-                "markets": [
-                    {
-                        "ticker": "BOS_WIN",
-                        "odds": 1.65,
-                        "volume": 180000,
-                        "description": "Boston Celtics to win"
-                    }
-                ]
-            },
-            {
-                "ticker": "NBA_DEN_PHX_20240320",
-                "title": "Nuggets vs Suns",
-                "status": "upcoming",
-                "markets": [
-                    {
-                        "ticker": "DEN_WIN",
-                        "odds": 1.95,
-                        "volume": 120000,
-                        "description": "Denver Nuggets to win"
-                    }
-                ]
-            }
-        ]
+    # Add required headers
+    headers = {
+        'accept': 'application/json'
     }
 
+    try:
+        response = requests.request(
+            method,
+            url,
+            params=params,
+            headers=headers  # Add headers to the request
+        )
+        print(f"DEBUG - Response status code: {response.status_code}")  # Debug line
+        print(f"DEBUG - Response text: {response.text[:200]}...")  # Debug line
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"DEBUG - Request failed: {str(e)}")  # Debug line
+        raise RuntimeError(f"Request to Kalshi API failed: {str(e)}")
+
+
 # def get_events(limit=100, cursor=None, status=None, series_ticker=None, with_nested_markets=False):
-#     """
-#     Fetches a list of events from the Kalshi API.
+#     """Mock implementation for testing"""
+#     return {
+#         "events": [
+#             {
+#                 "ticker": "NBA_GSW_LAL_20240320",
+#                 "title": "Warriors vs Lakers",
+#                 "status": "active",
+#                 "markets": [
+#                     {
+#                         "ticker": "GSW_WIN",
+#                         "odds": 1.85,
+#                         "volume": 150000,
+#                         "description": "Golden State Warriors to win"
+#                     }
+#                 ]
+#             },
+#             {
+#                 "ticker": "NBA_BOS_MIA_20240320",
+#                 "title": "Celtics vs Heat",
+#                 "status": "active",
+#                 "markets": [
+#                     {
+#                         "ticker": "BOS_WIN",
+#                         "odds": 1.65,
+#                         "volume": 180000,
+#                         "description": "Boston Celtics to win"
+#                     }
+#                 ]
+#             },
+#             {
+#                 "ticker": "NBA_DEN_PHX_20240320",
+#                 "title": "Nuggets vs Suns",
+#                 "status": "upcoming",
+#                 "markets": [
+#                     {
+#                         "ticker": "DEN_WIN",
+#                         "odds": 1.95,
+#                         "volume": 120000,
+#                         "description": "Denver Nuggets to win"
+#                     }
+#                 ]
+#             }
+#         ]
+#     }
 
-#     Args:
-#         limit (int): Number of results per page (default: 100).
-#         cursor (str, optional): Pagination cursor.
-#         status (str, optional): Filter by event status.
-#         series_ticker (str, optional): Filter by series ticker.
-#         with_nested_markets (bool, optional): Include nested markets in the response.
+def get_events(limit=100, cursor=None, with_nested_markets=False, status=None, series_ticker=None):
+    """
+    Fetches events from Kalshi Elections API.
 
-#     Returns:
-#         dict: JSON response containing event data.
-#     """
-#     path = "/trade-api/v2/events"
-#     params = {k: v for k, v in {
-#         "limit": limit,
-#         "cursor": cursor,
-#         "status": status,
-#         "series_ticker": series_ticker,
-#         "with_nested_markets": str(with_nested_markets).lower(),
-#     }.items() if v is not None}
-#     return make_request("GET", path, params=params)
+    Args:
+        limit (int, optional): Number of results per page (default: 100).
+        cursor (str, optional): Pagination cursor.
+        with_nested_markets (bool, optional): Include nested markets data.
+        status (str, optional): Filter events by status.
+        series_ticker (str, optional): Filter events by series ticker.
 
+    Returns:
+        dict: JSON response containing event data.
+    """
+    path = "/trade-api/v2/events"
+    params = {
+        "limit": limit,
+        "with_nested_markets": str(with_nested_markets).lower()
+    }
+    if cursor:
+        params["cursor"] = cursor
+    if status:
+        params["status"] = status
+    if series_ticker:
+        params["series_ticker"] = series_ticker
+
+    print(f"DEBUG - Full URL with params: {KALSHI_API_URL}{path}")  # Debug line
+    return make_request("GET", path, params=params)
 
 
 def get_event(event_ticker, with_nested_markets=False):
@@ -200,31 +235,75 @@ def get_event(event_ticker, with_nested_markets=False):
     return make_request("GET", path, params=params)
 
 
-def get_markets(limit=100, cursor=None, event_ticker=None, series_ticker=None, status=None, tickers=None):
+def get_markets(limit=100, cursor=None, event_ticker=None, series_ticker=None, status=None, tickers=None, min_volume=None, category=None):
     """
-    Fetches a list of markets from the Kalshi API.
+    Fetches a list of markets from the Kalshi API with enhanced filtering.
 
     Args:
-        limit (int): Number of results per page (default: 100).
-        cursor (str, optional): Pagination cursor.
-        event_ticker (str, optional): Filter by event ticker.
-        series_ticker (str, optional): Filter by series ticker.
-        status (str, optional): Filter by market status.
-        tickers (str, optional): Filter by specific market tickers.
+        limit (int): Number of results per page (default: 100)
+        cursor (str, optional): Pagination cursor
+        event_ticker (str, optional): Filter by event ticker
+        series_ticker (str, optional): Filter by series ticker
+        status (str, optional): Filter by market status ('active', 'settled', 'closed')
+        tickers (str, optional): Filter by specific market tickers (comma-separated)
+        min_volume (int, optional): Filter markets with minimum trading volume
+        category (str, optional): Filter by market category
 
     Returns:
-        dict: JSON response containing market data.
+        dict: JSON response containing filtered market data
     """
     path = "/trade-api/v2/markets"
-    params = {k: v for k, v in {
+
+    # Build base params with specific focus on Super Bowl related markets
+    params = {
         "limit": limit,
-        "cursor": cursor,
-        "event_ticker": event_ticker,
-        "series_ticker": series_ticker,
-        "status": status,
-        "tickers": tickers,
-    }.items() if v is not None}
-    return make_request("GET", path, params=params)
+        "status": status or "active",  # Default to active markets
+    }
+
+    # Add optional filters
+    if event_ticker:
+        params["event_ticker"] = event_ticker
+    if series_ticker:
+        params["series_ticker"] = "NFL-SB"  # Focus on Super Bowl markets
+    if tickers:
+        params["tickers"] = tickers
+
+    try:
+        # Make the API request
+        response = make_request("GET", path, params=params)
+
+        if response and 'markets' in response:
+            markets = response['markets']
+
+            # Filter by minimum volume if specified
+            if min_volume:
+                markets = [m for m in markets if m.get('volume', 0) >= min_volume]
+
+            # Filter by category if specified
+            if category:
+                markets = [m for m in markets if m.get('category', '').lower() == category.lower()]
+
+            # Add calculated fields for each market
+            for market in markets:
+                yes_price = float(market.get('yes_price', 0)) / 100
+                no_price = float(market.get('no_price', 0)) / 100
+
+                # Calculate ROI for both YES and NO positions
+                market['yes_roi'] = ((1 - yes_price) / yes_price) * 100 if yes_price > 0 else 0
+                market['no_roi'] = ((1 - no_price) / no_price) * 100 if no_price > 0 else 0
+
+                # Calculate implied probabilities
+                market['yes_implied_prob'] = yes_price
+                market['no_implied_prob'] = no_price
+
+            response['markets'] = markets
+            response['filtered_count'] = len(markets)
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error fetching markets: {str(e)}")
+        return {"markets": [], "error": str(e)}
 
 
 def get_market(ticker: str):
@@ -264,3 +343,15 @@ def get_trades(cursor=None, limit=100, ticker=None, min_ts=None, max_ts=None):
         "max_ts": max_ts,
     }.items() if v is not None}
     return make_request("GET", path, params=params)
+
+# Debug print of environment variables
+kalshi_env_vars = {k:v for k,v in os.environ.items() if 'KALSHI' in k}
+logger.debug(f"Kalshi environment variables: {kalshi_env_vars}")
+
+# At the top of the file, after loading environment variables:
+print(f"DEBUG - Initial KALSHI_API_URL value: {KALSHI_API_URL}")  # Debug line
+
+# Verify the URL is correct
+if not KALSHI_API_URL.startswith("https://api.elections.kalshi.com"):
+    print("WARNING: Incorrect Kalshi API URL detected")
+    KALSHI_API_URL = "https://api.elections.kalshi.com"

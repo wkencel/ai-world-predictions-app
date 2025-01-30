@@ -11,9 +11,10 @@ The application is divided into two main components: the client and the server.
 The client is a React application that serves as the user interface for interacting with the AI predictions.
 
 - **Public Directory**: Contains static assets.
-  - `index.html`: The main HTML file for the React app.
 
+  - `index.html`: The main HTML file for the React app.
 - **Source Directory**: Contains the core application logic.
+
   - **components/**: Houses reusable React components.
   - **pages/**: Contains Next.js pages for routing and navigation.
   - **styles/**: Includes CSS/SCSS files for styling the application.
@@ -22,7 +23,6 @@ The client is a React application that serves as the user interface for interact
   - **context/**: Context API files for global state management.
   - `App.js`: The main component that initializes the React app.
   - `index.js`: The entry point for the React application.
-
 - `package.json`: Lists client-side dependencies and scripts.
 
 ### Server
@@ -30,12 +30,16 @@ The client is a React application that serves as the user interface for interact
 The server handles data processing, API interactions, and serves the client application.
 
 - **API Directory**: Manages external API integrations.
+
   - **polymarket/**: Handles interactions with the Polymarket API.
   - **kalshi/**: Manages connections to the Kalshi API.
-
 - **Database Directory**: Manages database interactions.
-  - **pinecone/**: Contains scripts and configurations for Pinecone vector database.
 
+  - **pinecone/**: Contains scripts and configurations for Pinecone vector database.
+- **Scraping Directory**: Contains web scraping logic.
+
+  - **scripts/**: Scripts for extracting data from websites.
+  - **utils/**: Utility functions to support scraping operations.
 - **webScraping Directory**: Contains web scraping logic.
   - **models/**: Pydantic Data models for structuring data for json outputs
   - **crawlers/**: Scripts for scraping data by topic from websites.
@@ -44,20 +48,14 @@ The server handles data processing, API interactions, and serves the client appl
   - **utils/**: Utility functions to support scraping operations
 
 - **Services Directory**: Integrates with external services.
+
   - **openai/**: Manages interactions with OpenAI's language models.
-
 - **Utilities Directory**: General utility functions for server-side logic.
-
 - **Middlewares Directory**: Middleware functions for request processing.
-
 - **Routes Directory**: Defines API endpoints and routing logic.
-
 - **Models Directory**: Data models for structuring and validating data.
-
 - **Controllers Directory**: Business logic and data handling.
-
 - `server.js`: The main server file that initializes and runs the server.
-
 - `package.json`: Lists server-side dependencies and scripts.
 
 ### Root
@@ -72,15 +70,18 @@ To get started with the project, clone the repository and install the necessary 
 ## Setup
 
 1. **Run the Setup Script**:
+
    ```bash
    python setup.py
    ```
+
    This script will:
+
    - Create a Python virtual environment
    - Install Python dependencies
    - Install client-side npm dependencies
-
 2. **Activate the Virtual Environment**:
+
    - On macOS and Linux:
      ```bash
      source ai-predict/bin/activate
@@ -89,14 +90,15 @@ To get started with the project, clone the repository and install the necessary 
      ```bash
      ai-predict\Scripts\activate
      ```
-
 3. **Create a `.env` file** in the root directory (or in the `server` and/or `client` directories if you have separate configurations). This file will store your environment variables. For example:
+
    ```plaintext
    # Server environment variables
    OPENAI_API_KEY=your_openai_api_key
    PINECONE_API_KEY=your_pinecone_api_key
    POLYMARKET_API_KEY=your_polymarket_api_key
    KALSHI_API_KEY=your_kalshi_api_key
+   FIRECRAWL_API_KEY=firecrawl_api_key
 
    # Polymarket API Configuration
    POLYMARKET_API_URL="https://clob.polymarket.com"
@@ -117,21 +119,20 @@ To get started with the project, clone the repository and install the necessary 
 
 ## Setting Up and Running the Pinecone Database
 
-To use the Pinecone vector database with this application, follow these steps:
+To use the Pinecone vector database with this application, follow these steps: **Create an Index on Pinecone**:
 
-1. **Create an Index on Pinecone**:
-   - Go to the [Pinecone website](https://www.pinecone.io/).
+1. - Go to the [Pinecone website](https://www.pinecone.io/).
    - Log in or create an account if you don't have one.
    - Navigate to the "Indexes" section and click on "Create Index".
    - Choose the configuration "text-embedding-ada-002" for your index.
-
+   - Name the index "ai-world-predictions-2"
 2. **Configure Your Environment**:
+
    - Ensure you have your Pinecone API key. You can find this in the Pinecone dashboard under the "API Keys" section.
    - Add your Pinecone API key to the `.env` file in the root directory:
      ```plaintext
      PINECONE_API_KEY=your_pinecone_api_key
      ```
-
 3. **Run the Pinecone Setup Script**:
 
    - Run the script from your root directory to initialize and connect to your Pinecone index:
@@ -164,6 +165,7 @@ This service went through a few iterations, and the current iteration is the sim
   - The second step is to parse the data from the website. This is done by leveraging the OpenAI API. 
     - The AI model is instructed to take the markdown text and extract the most important pieces of data that are relevant to the article.
     - The AI model is instructed to output the data in the form of a JSON object that matches the specific schema for the topic (ex: SportsArticleExtraction).
+  - We currently have output data for sports, entertainment, us news, and world news.
 
 3. **Loading Data into Pinecone**:
   - The crawlers use the jsonOutputParser utility to generate a pre-defined output file if it doesn't already exist. Otherwise, it will append fresh data to the existing file.

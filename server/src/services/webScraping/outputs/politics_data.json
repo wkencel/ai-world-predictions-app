@@ -1,0 +1,193 @@
+[
+    {
+        "author": "Adam Wollner",
+        "date": "",
+        "figures": [
+            {
+                "facts": [
+                    "Trump administration's move to pause federal funding sparked unrest and legal challenges.",
+                    "He advised federal workers the option to leave their jobs for severance.",
+                    "Trump continues to push his conservative agenda through federal administrative actions."
+                ],
+                "name": "Donald Trump",
+                "organization": "United States Government",
+                "position": "President"
+            },
+            {
+                "facts": [
+                    "Commented that the administration is eager to get these issues to the Supreme Court."
+                ],
+                "name": "Sam Bagenstos",
+                "organization": "OMB (former Biden administration)",
+                "position": "Former OMB General Counsel"
+            },
+            {
+                "facts": [
+                    "Acknowledged issues with Medicaid systems and addressed the media amidst chaos."
+                ],
+                "name": "Karoline Leavitt",
+                "organization": "White House",
+                "position": "Press Secretary"
+            },
+            {
+                "facts": [
+                    "Blocked Trump's funding freeze temporarily."
+                ],
+                "name": "Loren L. AliKhan",
+                "organization": "",
+                "position": "U.S. District Judge"
+            },
+            {
+                "facts": [
+                    "Released memo instructing federal agencies on analyzing financial programs per Trump's executive orders."
+                ],
+                "name": "Matthew Vaeth",
+                "organization": "Office of Management and Budget",
+                "position": "Acting Director"
+            },
+            {
+                "facts": [
+                    "Criticized the Trump's administration for potentially harming communities with funding freezes."
+                ],
+                "name": "Patty Murray",
+                "organization": "Senate Appropriations Committee",
+                "position": "Top Democrat"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "Central to implementing the federal funding freeze and handling inquiries on affected programs."
+                ],
+                "name": "Office of Management and Budget",
+                "people": [
+                    {
+                        "facts": [],
+                        "name": "Matthew Vaeth",
+                        "organization": "Office of Management and Budget",
+                        "position": "Acting Director"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Filed a lawsuit against Trump administration's pause on funding.",
+                    "Representing nonprofit members affected by potential funding disruptions."
+                ],
+                "name": "National Council of Nonprofits",
+                "people": [
+                    {
+                        "facts": [
+                            "Expressed concerns over the financial viability of member organizations during the funding pause."
+                        ],
+                        "name": "Jessica Morton",
+                        "organization": "National Council of Nonprofits",
+                        "position": "Attorney"
+                    },
+                    {
+                        "facts": [
+                            "Argued against the immediate impact identified by plaintiffs during the freeze threat."
+                        ],
+                        "name": "Daniel Schwei",
+                        "organization": "DOJ",
+                        "position": "Attorney"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Confirmed it would implement the pause to align spending with Trump's policies."
+                ],
+                "name": "Environmental Protection Agency",
+                "people": []
+            },
+            {
+                "facts": [
+                    "Conducting a review of its spending in light of Trump administration directives."
+                ],
+                "name": "Department of Energy",
+                "people": []
+            }
+        ],
+        "quote": "The Trump administration’s attempt to withhold federal funding is fueling a long-brewing legal battle over the core constitutional principle that Congress gets to decide how to spend taxpayer money.",
+        "summary": "The article discusses the Trump administration's move to temporarily halt federal funding for various programs, which has led to significant constitutional and legal disputes. The administration's decision, framed as an effort to align spending with Trump's agenda, has sparked lawsuits, particularly from Democratic-led states and nonprofit organizations. A federal judge temporarily blocked the funding freeze, emphasizing the administration's lack of clarity on which programs would be affected. The freeze and subsequent legal battle highlight broader political tensions and Trump's efforts to reshape federal priorities according to his policies.",
+        "title": "The constitutional battle at the center of Trump's funding freeze",
+        "url": ""
+    },
+    {
+        "author": "Unknown",
+        "date": "Not Provided",
+        "figures": [
+            {
+                "facts": [
+                    "Signed an executive order to restrict gender-affirming care for minors.",
+                    "Previously signed orders affecting transgender military service and federal legal recognition of transgender people."
+                ],
+                "name": "Donald Trump",
+                "organization": "United States Government",
+                "position": "President"
+            },
+            {
+                "facts": [
+                    "Criticized the executive order, highlighting its discriminatory impact on transgender youth.",
+                    "Emphasizes legal strategies to challenge the order."
+                ],
+                "name": "Omar Gonzalez-Pagan",
+                "organization": "Lambda Legal",
+                "position": "Attorney"
+            }
+        ],
+        "organizations": [
+            {
+                "facts": [
+                    "Condemned the executive order as harmful to transgender youth.",
+                    "Promises to fight the order legally."
+                ],
+                "name": "Lambda Legal",
+                "people": [
+                    {
+                        "facts": [
+                            "Advocates for LGBTQ+ legal rights and against the executive order on gender-affirming care."
+                        ],
+                        "name": "Omar Gonzalez-Pagan",
+                        "organization": "Lambda Legal",
+                        "position": "Attorney"
+                    }
+                ]
+            },
+            {
+                "facts": [
+                    "Develops standards of care for transgender health, targeted by the executive order's critique of lacking 'scientific integrity.'"
+                ],
+                "name": "World Professional Association for Transgender Health (WPATH)",
+                "people": []
+            },
+            {
+                "facts": [
+                    "Directed by the executive order to end federal support for gender-affirming care for minors.",
+                    "Tasked to review and publish guidelines on gender dysphoria care for minors."
+                ],
+                "name": "Department of Health and Human Services (HHS)",
+                "people": []
+            },
+            {
+                "facts": [
+                    "Supports access to gender-affirming care for minors and opposes restrictive laws."
+                ],
+                "name": "American Academy of Pediatrics",
+                "people": []
+            },
+            {
+                "facts": [
+                    "Opposes restrictions on gender-affirming care for minors, supports it as medically necessary."
+                ],
+                "name": "American Medical Association",
+                "people": []
+            }
+        ],
+        "quote": "“Across the country today, medical professionals are maiming and sterilizing a growing number of impressionable children under the radical and false claim that adults can change a child’s sex through a series of irreversible medical interventions,” the executive order states.",
+        "summary": "President Donald Trump signed a broad executive order targeting transition-related medical care for minors, specifically those under 19. The order prohibits federal funding from covering gender-affirming care, including puberty blockers, hormone therapy, and surgery for minors. It also restricts research and education grants related to this care and directs other federal actions to end such practices. Major medical organizations oppose this move, supporting gender-affirming care as necessary and beneficial. Critics argue the order is discriminatory and will harm transgender youth. Lambda Legal and other advocacy groups promise to fight the order, condemning it as harmful and denying necessary medical care to transgender youth.",
+        "title": "Trump signs executive order banning federal support of gender-affirming care for anyone under 19",
+        "url": "Not Provided"
+    }
+]
