@@ -22,7 +22,7 @@ load_dotenv(env_path)
 # Initialize variables
 pc = None
 index = None
-index_name = "ai-world-predictions-pinecone-dave"
+index_name = "ai-world-predictions-pinecone"
 
 @color_logger.log_service_call('pinecone')
 def query_pinecone(query_text: str, filter_params: Dict = None):
